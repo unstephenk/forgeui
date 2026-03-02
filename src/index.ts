@@ -14,6 +14,7 @@ import { ensureDir, readJsonFile, writeFile } from "./utils.js";
 import { diffText } from "./textdiff.js";
 import { validateTokensDoc } from "./validate.js";
 import { generateTokenIndex } from "./docsgen.js";
+import { asConfigSchema } from "./schema.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -254,6 +255,16 @@ cli
     const out = outPath(cfg, "tokens.index.json");
     writeFile(out, JSON.stringify(index, null, 2) + "\n");
 
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), out)] }, null, 2) + "\n");
+    else log(`Wrote ${path.relative(process.cwd(), out)}`);
+  });
+
+cli
+  .command("schema", "Write forgeui config JSON schema (for editor IntelliSense)")
+  .action(async () => {
+    const schema = asConfigSchema();
+    const out = path.resolve(process.cwd(), "forgeui.config.schema.json");
+    writeFile(out, JSON.stringify(schema, null, 2) + "\n");
     if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), out)] }, null, 2) + "\n");
     else log(`Wrote ${path.relative(process.cwd(), out)}`);
   });

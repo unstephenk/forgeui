@@ -3,6 +3,9 @@ forgeui.config.*
 forgeui/
 tokens.json
 
+# allow committing generated schema (not sensitive)
+!forgeui.config.schema.json
+
 # but keep committed examples
 !examples/**/forgeui.config.*
 !examples/**/tokens.json

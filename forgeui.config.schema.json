@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/unstephenk/forgeui/blob/main/forgeui.config.schema.json",
+  "title": "ForgeUI Config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tokensPath": {
+      "type": "string"
+    },
+    "outDir": {
+      "type": "string"
+    },
+    "themes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rootTheme": {
+          "type": "string"
+        },
+        "selectorByTheme": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "rootTheme"
+      ]
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "color",
+              "dimension",
+              "shadow",
+              "fontFamily",
+              "fontSize",
+              "lineHeight",
+              "fontWeight",
+              "typography"
+            ]
+          }
+        }
+      }
+    },
+    "css": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "alsoEmitClassDark": {
+          "type": "boolean"
+        }
+      }
+    },
+    "tailwind": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cssFile": {
+          "type": "string"
+        },
+        "themeFile": {
+          "type": "string"
+        },
+        "presetFile": {
+          "type": "string"
+        },
+        "darkThemeName": {
+          "type": "string"
+        },
+        "map": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "colors": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "cssFile",
+        "presetFile",
+        "darkThemeName"
+      ]
+    },
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prettier": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "tokensPath",
+    "outDir",
+    "themes",
+    "css",
+    "tailwind"
+  ]
+}
