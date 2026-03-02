@@ -38,6 +38,8 @@ In your app CSS (example):
 
 See `docs/SPEC.md`.
 
+Getting started: see `docs/GETTING_STARTED.md`.
+
 Roadmap: see `ROADMAP.md`.
 
 ## Next up (features / improvements)
