@@ -22,7 +22,19 @@ function getForgeuiVersion(): string {
   }
 }
 
+const argv = process.argv.slice(2);
+const GLOBAL = {
+  quiet: argv.includes("--quiet"),
+  json: argv.includes("--json")
+};
+
+function log(s: string) {
+  if (!GLOBAL.quiet && !GLOBAL.json) console.log(s);
+}
+
 const cli = cac("forgeui");
+cli.option("--quiet", "Suppress non-essential output");
+cli.option("--json", "Output machine-readable JSON (where supported)");
 
 cli
   .command("init", `Create ${DEFAULT_CONFIG_FILES[0]} and output folder`)
@@ -35,11 +47,11 @@ cli
       throw new Error(`${file} already exists (use --force to overwrite)`);
     }
     fs.writeFileSync(configPath, configTemplate({ js: !!opts.js }), "utf8");
-    console.log(`Wrote ${file}`);
+    log(`Wrote ${file}`);
 
     // also create outDir from defaults
     ensureDir(path.resolve(process.cwd(), "forgeui"));
-    console.log("Created ./forgeui/");
+    log("Created ./forgeui/");
   });
 
 async function runSync(params?: { config?: string; write?: boolean }): Promise<{
@@ -95,10 +107,12 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
 
     writeFile(lockPath, JSON.stringify(lock, null, 2) + "\n");
 
-    console.log(`Wrote ${path.relative(process.cwd(), cssPath)}`);
-    console.log(`Wrote ${path.relative(process.cwd(), presetPath)}`);
-    console.log(`Wrote ${path.relative(process.cwd(), lockPath)}`);
-    console.log(`Wrote ${path.relative(process.cwd(), manifestPath)}`);
+    const written = [cssPath, presetPath, lockPath, manifestPath].map((p) => path.relative(process.cwd(), p));
+    if (GLOBAL.json) {
+      process.stdout.write(JSON.stringify({ ok: true, written }, null, 2) + "\n");
+    } else {
+      for (const p of written) log(`Wrote ${p}`);
+    }
   }
 
   return { cfgPath, tokensAbs, cssPath, presetPath, lockPath, manifestPath, css, preset };
@@ -107,8 +121,9 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
 cli
   .command("sync", "Generate tokens.css + Tailwind preset from Tokens Studio export")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
-    await runSync({ config: opts.config });
+  .option("--dry-run", "Do not write files; compute outputs only")
+  .action(async (opts: { config?: string; dryRun?: boolean }) => {
+    await runSync({ config: opts.config, write: !opts.dryRun });
   });
 
 cli
@@ -118,7 +133,7 @@ cli
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
-    console.log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
+    log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
     await runSync({ config: cfgPath });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
@@ -148,13 +163,24 @@ cli
     });
 
     const out = [cssD, presetD].filter(Boolean).join("\n");
+    const changedFiles = [
+      { file: path.relative(process.cwd(), res.cssPath), changed: !!cssD },
+      { file: path.relative(process.cwd(), res.presetPath), changed: !!presetD }
+    ].filter((x) => x.changed);
+
     if (!out) {
-      console.log("No changes.");
+      if (GLOBAL.json) process.stdout.write(JSON.stringify({ changed: false, files: [] }, null, 2) + "\n");
+      else log("No changes.");
       process.exitCode = 0;
       return;
     }
 
-    process.stdout.write(out);
+    if (GLOBAL.json) {
+      process.stdout.write(JSON.stringify({ changed: true, files: changedFiles.map((x) => x.file) }, null, 2) + "\n");
+    } else {
+      process.stdout.write(out);
+    }
+
     process.exitCode = 1;
   });
 
