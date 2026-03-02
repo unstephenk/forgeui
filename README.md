@@ -9,11 +9,24 @@ npm i -D @forgeui/cli
 # or pnpm add -D @forgeui/cli
 ```
 
-## Usage (v0 draft)
+## Usage (v0)
 
 ```bash
-forgeui init
+forgeui init          # writes forgeui.config.ts
+forgeui init --js     # writes forgeui.config.js
 forgeui sync
+forgeui diff          # exits non-zero if generated output differs
+```
+
+### Tailwind v4 wiring (CSS-first)
+
+In your app CSS (example):
+
+```css
+@import "tailwindcss";
+@config "./forgeui/forgeui.preset.ts";
+
+@import "./forgeui/tokens.css";
 ```
 
 ## Contract
@@ -24,6 +37,8 @@ forgeui sync
   - `forgeui.preset.ts` (Tailwind v4 preset that references those vars)
 
 See `docs/SPEC.md`.
+
+Roadmap: see `ROADMAP.md`.
 
 ## Next up (features / improvements)
 
