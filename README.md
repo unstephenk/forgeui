@@ -24,4 +24,24 @@ forgeui sync
   - `forgeui.preset.ts` (Tailwind v4 preset that references those vars)
 
 See `docs/SPEC.md`.
-ForgeUI — Tokens Studio → Tailwind v4 + CSS variables generator (CLI)
+
+## Next up (features / improvements)
+
+### Top 8 (next)
+1. **Config robustness**: support both `forgeui.config.ts` and `forgeui.config.js` cleanly; document behavior and defaults.
+2. **Nicer preset output**: generate a readable `forgeui.preset.ts` (no JSON stringification) + add copy/paste Tailwind v4 usage snippet.
+3. **Mapping expansion**: add generators for spacing, radius, shadows, and typography (not just colors).
+4. **`forgeui diff`**: show what changed since last sync (tokens + generated files).
+5. **Lockfile + manifest**: write `forgeui.lock.json` + `forgeui.manifest.json` for deterministic rebuilds + diffs.
+6. **Golden tests**: fixture-driven tests that assert `tokens.css` and preset outputs match expected.
+7. **Better ref resolution + errors**: clearer diagnostics (full token path, theme, cycle chain).
+8. **Example app**: `examples/react-tailwind-v4/` proving preset + CSS work (light/dark toggle).
+
+### Next 7 (after that)
+9. **Theme selector config**: allow mapping theme names → selectors (including multiple selectors per theme).
+10. **Token filtering**: include/exclude sets and namespaces (e.g. only `core.color.*`).
+11. **Formatting**: stable sorting + optional Prettier formatting for generated TS.
+12. **Performance**: incremental generation + caching for large token files.
+13. **Warnings**: detect unsupported token types and emit actionable warnings.
+14. **CI**: GitHub Actions to run tests + publish preview builds.
+15. **Docs**: quickstart + troubleshooting for Tokens Studio export quirks.
