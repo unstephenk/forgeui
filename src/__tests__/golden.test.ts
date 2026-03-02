@@ -13,6 +13,10 @@ function readJson(p: string) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
 }
 
+function normalizeNewlines(s: string) {
+  return s.replace(/\r\n/g, "\n");
+}
+
 describe("golden fixtures", () => {
   it("generates tokens.css and forgeui.preset.ts deterministically", () => {
     const doc = readJson(path.join(FIXTURES, "tokens.themesets.json")) as TokensStudioDoc;
@@ -24,7 +28,7 @@ describe("golden fixtures", () => {
     const cssExpected = fs.readFileSync(path.join(GOLDEN, "tokens.css"), "utf8");
     const presetExpected = fs.readFileSync(path.join(GOLDEN, "forgeui.preset.ts"), "utf8");
 
-    expect(css).toBe(cssExpected);
-    expect(preset).toBe(presetExpected);
+    expect(normalizeNewlines(css)).toBe(normalizeNewlines(cssExpected));
+    expect(normalizeNewlines(preset)).toBe(normalizeNewlines(presetExpected));
   });
 });
