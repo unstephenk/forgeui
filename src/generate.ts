@@ -56,6 +56,76 @@ function rgbFuncToTriplet(v: string): string | null {
   return `${rn} ${gn} ${bn}`;
 }
 
+function hslToRgbTriplet(input: string): string | null {
+  // supports hsl(210 50% 40%) and hsl(210, 50%, 40%) and hsla(...)
+  const s = input.trim();
+  const m = s.match(/^hsla?\((.*)\)$/i);
+  if (!m) return null;
+  const inner = m[1].trim();
+
+  const parts = inner.includes(",")
+    ? inner.split(",").map((p) => p.trim())
+    : inner
+        .replace(/\s*\/\s*.*$/, "") // drop / alpha if present
+        .trim()
+        .split(/\s+/)
+        .map((p) => p.trim());
+
+  if (parts.length < 3) return null;
+
+  const hRaw = parts[0].replace(/deg$/i, "");
+  const sRaw = parts[1];
+  const lRaw = parts[2];
+
+  const h = Number(hRaw);
+  const sp = Number(sRaw.replace(/%$/, ""));
+  const lp = Number(lRaw.replace(/%$/, ""));
+  if (![h, sp, lp].every((n) => Number.isFinite(n))) return null;
+
+  const hh = ((h % 360) + 360) % 360;
+  const sat = Math.max(0, Math.min(1, sp / 100));
+  const lig = Math.max(0, Math.min(1, lp / 100));
+
+  const c = (1 - Math.abs(2 * lig - 1)) * sat;
+  const x = c * (1 - Math.abs(((hh / 60) % 2) - 1));
+  const m2 = lig - c / 2;
+
+  let r1 = 0,
+    g1 = 0,
+    b1 = 0;
+
+  if (hh < 60) {
+    r1 = c;
+    g1 = x;
+  } else if (hh < 120) {
+    r1 = x;
+    g1 = c;
+  } else if (hh < 180) {
+    g1 = c;
+    b1 = x;
+  } else if (hh < 240) {
+    g1 = x;
+    b1 = c;
+  } else if (hh < 300) {
+    r1 = x;
+    b1 = c;
+  } else {
+    r1 = c;
+    b1 = x;
+  }
+
+  const r = Math.round((r1 + m2) * 255);
+  const g = Math.round((g1 + m2) * 255);
+  const b = Math.round((b1 + m2) * 255);
+
+  return `${r} ${g} ${b}`;
+}
+
+function normalizeDimension(resolved: unknown): string {
+  if (typeof resolved === "number") return `${resolved}px`;
+  return String(resolved);
+}
+
 function shadowToCssValue(resolved: unknown): string {
   // Tokens Studio shadow can be an array of shadow objects.
   // We accept either:
@@ -109,10 +179,12 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
         const varName = varNameFromTokenPath(t.path);
 
         if (t.leaf.$type === "color" && typeof resolved === "string") {
-          const rgb = hexToRgbTriplet(resolved) ?? rgbFuncToTriplet(resolved);
+          const rgb = hexToRgbTriplet(resolved) ?? rgbFuncToTriplet(resolved) ?? hslToRgbTriplet(resolved);
           lines.push(`  ${varName}: ${rgb ?? resolved};`);
         } else if (t.leaf.$type === "shadow") {
           lines.push(`  ${varName}: ${shadowToCssValue(resolved)};`);
+        } else if (t.leaf.$type === "dimension") {
+          lines.push(`  ${varName}: ${normalizeDimension(resolved)};`);
         } else {
           lines.push(`  ${varName}: ${String(resolved)};`);
         }
@@ -225,7 +297,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         const sKey = tokenPathToTailwindKey(t.path, "space");
         if (sKey.length) {
           const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
-          setNested(spacing, sKey, String(resolved));
+          setNested(spacing, sKey, normalizeDimension(resolved));
           continue;
         }
 
@@ -233,7 +305,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         const rKey = tokenPathToTailwindKey(t.path, "radius");
         if (rKey.length) {
           const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
-          setNested(borderRadius, rKey, String(resolved));
+          setNested(borderRadius, rKey, normalizeDimension(resolved));
           continue;
         }
       }
