@@ -19,7 +19,7 @@ describe("golden fixtures", () => {
     const cfg = defaultConfig();
 
     const css = generateTokensCss(doc, cfg);
-    const preset = generateTailwindPreset(doc, cfg);
+    const preset = generateTailwindPreset(doc, cfg).preset;
 
     const cssExpected = fs.readFileSync(path.join(GOLDEN, "tokens.css"), "utf8");
     const presetExpected = fs.readFileSync(path.join(GOLDEN, "forgeui.preset.ts"), "utf8");
