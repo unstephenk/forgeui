@@ -3,6 +3,10 @@ forgeui.config.*
 forgeui/
 tokens.json
 
+# but keep committed examples
+!examples/**/forgeui.config.*
+!examples/**/tokens.json
+
 # Logs
 logs
 *.log
