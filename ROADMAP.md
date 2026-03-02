@@ -12,13 +12,13 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - example React + Tailwind v4 app
 
 ## Next (keep >= 10)
-1. **Token filtering**: include/exclude by set/namespace/glob and `$type`.
-2. **Theme strategy**: multi-selector themes + explicit theme→selector mapping (array support).
-3. **Tailwind mapping config**: configurable mapping/renames (e.g. map `core.color.bg.*` → `colors.surface.*`).
-4. **Validation + warnings**: actionable errors for unsupported types, missing theme values, dangling refs.
-5. **Incremental perf**: cache resolved token graph; only rewrite changed outputs.
-6. **Prettier integration**: optional formatting pass for generated TS + stable ordering guarantees.
-7. **Import modes**: output both preset and “theme fragment” (`forgeui.theme.ts`).
-8. **Docs + troubleshooting**: export options, common Tokens Studio quirks, Tailwind v4 setup guide.
-9. **NPM smoke test**: add `npm pack` + install test in CI to catch broken publishes.
-10. **Windows support**: path handling + newline stability + CI job on windows-latest.
+1. **Validation + warnings**: actionable errors for unsupported types, missing theme values, dangling refs.
+2. **Incremental perf**: cache resolved token graph; only rewrite changed outputs.
+3. **Prettier integration**: optional formatting pass for generated TS + stable ordering guarantees.
+4. **Import modes**: output both preset and “theme fragment” (`forgeui.theme.ts`).
+5. **Docs + troubleshooting**: export options, common Tokens Studio quirks, Tailwind v4 setup guide.
+6. **NPM smoke test**: add `npm pack` + install test in CI to catch broken publishes.
+7. **Windows support**: path handling + newline stability + CI job on windows-latest.
+8. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.
+9. **Component scaffolding (v1)**: `forgeui scaffold <component>` for React + Tailwind.
+10. **Storybook integration (v1)**: auto-generate token docs page + theme switcher.

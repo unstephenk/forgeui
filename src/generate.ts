@@ -1,15 +1,17 @@
 import path from "node:path";
+import picomatch from "picomatch";
 import type { ForgeUIConfig, Theme, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, listEnabledSetsForTheme, resolveTokenValue } from "./tokens.js";
 import { formatTs } from "./format.js";
 import { isObject, slugify, toKebab } from "./utils.js";
 
-function themeSelector(cfg: ForgeUIConfig, theme: Theme): string {
+function themeSelectors(cfg: ForgeUIConfig, theme: Theme): string[] {
   const name = theme.name;
   const explicit = cfg.themes.selectorByTheme?.[name];
-  if (explicit) return explicit;
-  if (name === cfg.themes.rootTheme) return ":root";
-  return `[data-theme=\"${slugify(name)}\"]`;
+  if (Array.isArray(explicit)) return explicit;
+  if (typeof explicit === "string") return [explicit];
+  if (name === cfg.themes.rootTheme) return [":root"];
+  return [`[data-theme=\"${slugify(name)}\"]`];
 }
 
 function varNameFromTokenPath(tokenPath: string[]): string {
@@ -32,17 +34,28 @@ function hexToRgbTriplet(hex: string): string | null {
 export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): string {
   const themes = getThemes(doc);
 
+  const include = cfg.filter?.include?.length ? picomatch(cfg.filter.include) : null;
+  const exclude = cfg.filter?.exclude?.length ? picomatch(cfg.filter.exclude) : null;
+
   const blocks: string[] = [];
   for (const theme of themes) {
-    const enabledSets = listEnabledSetsForTheme(theme);
-    const selector = themeSelector(cfg, theme);
+    let enabledSets = listEnabledSetsForTheme(theme);
+    if (cfg.filter?.sets?.length) enabledSets = enabledSets.filter((s) => cfg.filter!.sets!.includes(s));
+
+    const selectors = themeSelectors(cfg, theme);
 
     const lines: string[] = [];
     for (const setName of enabledSets) {
       const setObj = (doc as any)[setName];
       const flat = flattenSetTokens(setObj, [setName]);
       for (const t of flat) {
-        const resolved = resolveTokenValue(doc, t.leaf, theme.name, [], t.fqName);
+        if (cfg.filter?.types?.length && !cfg.filter.types.includes(t.leaf.$type)) continue;
+
+        const fq = t.fqName;
+        if (include && !include(fq)) continue;
+        if (exclude && exclude(fq)) continue;
+
+        const resolved = resolveTokenValue(doc, t.leaf, theme.name, [], fq);
         const varName = varNameFromTokenPath(t.path);
 
         if (t.leaf.$type === "color" && typeof resolved === "string") {
@@ -57,11 +70,9 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
       }
     }
 
-    blocks.push(`${selector} {\n${lines.sort().join("\n")}\n}`);
-
-    // Optional `.dark` mirror for dark theme
-    if (cfg.css.alsoEmitClassDark && theme.name === cfg.tailwind.darkThemeName) {
-      blocks.push(`.dark {\n${lines.sort().join("\n")}\n}`);
+    const body = lines.sort().join("\n");
+    for (const selector of selectors) {
+      blocks.push(`${selector} {\n${body}\n}`);
     }
   }
 
@@ -73,6 +84,25 @@ function tokenPathToTailwindColorKey(tokenPath: string[]): string[] {
   const idx = tokenPath.indexOf("color");
   if (idx === -1) return [];
   return tokenPath.slice(idx + 1);
+}
+
+function remapKeyPath(keyPath: string[], remaps?: Record<string, string>): string[] {
+  if (!remaps) return keyPath;
+  const asDot = keyPath.join(".");
+
+  // Longest-prefix match on dotted key paths
+  let bestFrom: string | null = null;
+  for (const from of Object.keys(remaps)) {
+    if (asDot === from || asDot.startsWith(from + ".")) {
+      if (!bestFrom || from.length > bestFrom.length) bestFrom = from;
+    }
+  }
+  if (!bestFrom) return keyPath;
+
+  const to = remaps[bestFrom];
+  const rest = asDot === bestFrom ? "" : asDot.slice(bestFrom.length + 1);
+  const nextDot = rest ? `${to}.${rest}` : to;
+  return nextDot.split(".");
 }
 
 function tailwindColorValue(varName: string): string {
@@ -105,7 +135,11 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const root = getThemes(doc).find((t) => t.name === rootTheme);
   if (!root) throw new Error(`Root theme not found: ${rootTheme}`);
 
-  const enabledSets = listEnabledSetsForTheme(root);
+  let enabledSets = listEnabledSetsForTheme(root);
+  if (cfg.filter?.sets?.length) enabledSets = enabledSets.filter((s) => cfg.filter!.sets!.includes(s));
+
+  const include = cfg.filter?.include?.length ? picomatch(cfg.filter.include) : null;
+  const exclude = cfg.filter?.exclude?.length ? picomatch(cfg.filter.exclude) : null;
 
   const colors: any = {};
   const spacing: any = {};
@@ -124,10 +158,14 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     const flat = flattenSetTokens((doc as any)[setName], [setName]);
     for (const t of flat) {
       const fq = t.fqName;
+      if (cfg.filter?.types?.length && !cfg.filter.types.includes(t.leaf.$type)) continue;
+      if (include && !include(fq)) continue;
+      if (exclude && exclude(fq)) continue;
 
       if (t.leaf.$type === "color") {
-        const keyPath = tokenPathToTailwindColorKey(t.path);
+        let keyPath = tokenPathToTailwindColorKey(t.path);
         if (keyPath.length === 0) continue;
+        keyPath = remapKeyPath(keyPath, cfg.tailwind.map?.colors);
         const vname = `--${toKebab(t.path)}`;
         setNested(colors, keyPath, tailwindColorValue(vname));
         continue;

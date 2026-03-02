@@ -19,16 +19,28 @@ export function defaultConfig(): ForgeUIConfig {
       rootTheme: "Light",
       selectorByTheme: {
         Light: ":root",
-        Dark: "[data-theme=\"dark\"]"
+        Dark: ["[data-theme=\"dark\"]", ".dark"]
       }
     },
+    filter: {
+      include: ["core.*", "components.*"],
+      exclude: [],
+      sets: [],
+      types: []
+    },
     css: {
-      alsoEmitClassDark: true
+      alsoEmitClassDark: false
     },
     tailwind: {
       cssFile: "tokens.css",
       presetFile: "forgeui.preset.ts",
-      darkThemeName: "Dark"
+      darkThemeName: "Dark",
+      map: {
+        colors: {
+          // Example: map `bg.*` → `surface.*`
+          // "bg": "surface"
+        }
+      }
     }
   };
 }
