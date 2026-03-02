@@ -13,6 +13,7 @@ import type { TokensStudioDoc } from "./types.js";
 import { ensureDir, readJsonFile, writeFile } from "./utils.js";
 import { diffText } from "./textdiff.js";
 import { validateTokensDoc } from "./validate.js";
+import { generateTokenIndex } from "./docsgen.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -27,7 +28,8 @@ function getForgeuiVersion(): string {
 const argv = process.argv.slice(2);
 const GLOBAL = {
   quiet: argv.includes("--quiet"),
-  json: argv.includes("--json")
+  json: argv.includes("--json"),
+  strict: argv.includes("--strict")
 };
 
 function log(s: string) {
@@ -37,6 +39,7 @@ function log(s: string) {
 const cli = cac("forgeui");
 cli.option("--quiet", "Suppress non-essential output");
 cli.option("--json", "Output machine-readable JSON (where supported)");
+cli.option("--strict", "Treat warnings as errors (non-zero exit)");
 
 cli
   .command("init", `Create ${DEFAULT_CONFIG_FILES[0]} and output folder`)
@@ -71,6 +74,10 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
   const validation = validateTokensDoc(doc);
+  if (GLOBAL.strict && validation.warnings.length) {
+    const first = validation.warnings[0];
+    throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
+  }
 
   const css = generateTokensCss(doc, cfg);
   const gen = generateTailwindPreset(doc, cfg);
@@ -227,6 +234,28 @@ cli
     }
 
     process.exitCode = 1;
+  });
+
+cli
+  .command("docs", "Generate a token index JSON for docs/search")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .action(async (opts: { config?: string }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+    const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
+    const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
+    const validation = validateTokensDoc(doc);
+    if (GLOBAL.strict && validation.warnings.length) {
+      const first = validation.warnings[0];
+      throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
+    }
+
+    const index = generateTokenIndex(doc, cfg);
+    const out = outPath(cfg, "tokens.index.json");
+    writeFile(out, JSON.stringify(index, null, 2) + "\n");
+
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), out)] }, null, 2) + "\n");
+    else log(`Wrote ${path.relative(process.cwd(), out)}`);
   });
 
 cli.help();
