@@ -15,6 +15,7 @@ import { diffText } from "./textdiff.js";
 import { validateTokensDoc } from "./validate.js";
 import { generateTokenIndex } from "./docsgen.js";
 import { asConfigSchema } from "./schema.js";
+import { writeTokensTemplate } from "./template.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -74,7 +75,7 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
   const cfg = await loadConfig(cfgPath);
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
-  const validation = validateTokensDoc(doc);
+  const validation = validateTokensDoc(doc, cfg);
   if (GLOBAL.strict && validation.warnings.length) {
     const first = validation.warnings[0];
     throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
@@ -245,7 +246,7 @@ cli
     const cfg = await loadConfig(cfgPath);
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
-    const validation = validateTokensDoc(doc);
+    const validation = validateTokensDoc(doc, cfg);
     if (GLOBAL.strict && validation.warnings.length) {
       const first = validation.warnings[0];
       throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
@@ -267,6 +268,44 @@ cli
     writeFile(out, JSON.stringify(schema, null, 2) + "\n");
     if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), out)] }, null, 2) + "\n");
     else log(`Wrote ${path.relative(process.cwd(), out)}`);
+  });
+
+cli
+  .command("validate", "Validate tokens.json and print warnings")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .action(async (opts: { config?: string }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+    const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
+    const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
+    const validation = validateTokensDoc(doc, cfg);
+
+    if (GLOBAL.json) {
+      process.stdout.write(JSON.stringify({ ok: validation.warnings.length === 0, warnings: validation.warnings }, null, 2) + "\n");
+    } else {
+      if (!validation.warnings.length) {
+        log("No warnings.");
+      } else {
+        for (const w of validation.warnings) {
+          const where = [w.theme ? `theme=${w.theme}` : null, w.token ? `token=${w.token}` : null]
+            .filter(Boolean)
+            .join(" ");
+          console.warn(`[forgeui warning] ${w.code}${where ? ` (${where})` : ""}: ${w.message}`);
+        }
+      }
+    }
+
+    if (GLOBAL.strict && validation.warnings.length) process.exitCode = 1;
+  });
+
+cli
+  .command("template", "Write a starter Tokens Studio export (tokens.json)")
+  .option("--out <path>", "Output path", { default: "tokens.json" })
+  .option("--force", "Overwrite existing file")
+  .action(async (opts: { out: string; force?: boolean }) => {
+    const abs = writeTokensTemplate(opts.out, opts.force);
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), abs)] }, null, 2) + "\n");
+    else log(`Wrote ${path.relative(process.cwd(), abs)}`);
   });
 
 cli.help();

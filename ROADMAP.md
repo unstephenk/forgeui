@@ -20,5 +20,5 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 6. **Token normalization**: normalize units (`px`/`rem`) and handle numeric dimensions consistently.
 7. **Docs: token index markdown**: optional `tokens.md` output in addition to JSON index.
 8. **Docs site**: simple Docusaurus/VitePress site consuming `tokens.index.json`.
-9. **Config validation command**: `forgeui validate` to print warnings without generating.
-10. **Versioning**: decide on semver + add `changeset`/changelog flow.
+9. **Versioning**: decide on semver + add `changeset`/changelog flow.
+10. **Template command**: `forgeui template` writes a starter `tokens.json`.
