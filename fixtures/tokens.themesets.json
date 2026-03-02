@@ -1,0 +1,75 @@
+{
+  "$metadata": {
+    "name": "ForgeUI Sample (Themes + Sets)",
+    "version": "1.0.0",
+    "generator": "forgeui-fixture"
+  },
+  "$sets": {
+    "core": "enabled",
+    "components": "enabled"
+  },
+  "$themes": [
+    {
+      "id": "t_light",
+      "name": "Light",
+      "selectedTokenSets": {
+        "core": "enabled",
+        "components": "enabled"
+      }
+    },
+    {
+      "id": "t_dark",
+      "name": "Dark",
+      "selectedTokenSets": {
+        "core": "enabled",
+        "components": "enabled"
+      }
+    }
+  ],
+  "core": {
+    "color": {
+      "bg": {
+        "default": {
+          "$type": "color",
+          "$value": {
+            "Light": "#FFFFFF",
+            "Dark": "#0B0F19"
+          }
+        }
+      },
+      "fg": {
+        "default": {
+          "$type": "color",
+          "$value": {
+            "Light": "#0B0F19",
+            "Dark": "#F8FAFC"
+          }
+        }
+      },
+      "brand": {
+        "500": {
+          "$type": "color",
+          "$value": {
+            "Light": "#6366F1",
+            "Dark": "#818CF8"
+          }
+        }
+      }
+    },
+    "space": {
+      "4": { "$type": "dimension", "$value": "16px" },
+      "8": { "$type": "dimension", "$value": "32px" }
+    },
+    "radius": {
+      "md": { "$type": "dimension", "$value": "10px" }
+    }
+  },
+  "components": {
+    "button": {
+      "bg": {
+        "default": { "$type": "color", "$value": "{core.color.brand.500}" }
+      },
+      "radius": { "$type": "dimension", "$value": "{core.radius.md}" }
+    }
+  }
+}
