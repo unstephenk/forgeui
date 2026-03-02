@@ -24,7 +24,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "npx tsup src/index.ts src/api.ts --format esm --platform node --target node20 --dts",
-    "test": "vitest run",
+    "test": "npx vitest run",
     "lint": "eslint .",
     "format": "prettier -w ."
   },

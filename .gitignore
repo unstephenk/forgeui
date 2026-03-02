@@ -1,3 +1,8 @@
+# Local forgeui outputs / scratch
+forgeui.config.*
+forgeui/
+tokens.json
+
 # Logs
 logs
 *.log

@@ -51,7 +51,13 @@ export function getTokenLeafAtPath(doc: TokensStudioDoc, pathStr: string): Token
   return cur;
 }
 
-export function resolveTokenValue(doc: TokensStudioDoc, leaf: TokenLeaf, themeName: string, stack: string[] = []): unknown {
+export function resolveTokenValue(
+  doc: TokensStudioDoc,
+  leaf: TokenLeaf,
+  themeName: string,
+  stack: string[] = [],
+  resolving?: string
+): unknown {
   const v = leaf.$value;
 
   // If value is a theme map, select by theme name.
@@ -60,9 +66,18 @@ export function resolveTokenValue(doc: TokensStudioDoc, leaf: TokenLeaf, themeNa
     // chosen might itself be a ref string
     const ref = unwrapRef(chosen);
     if (ref) {
-      if (stack.includes(ref)) throw new Error(`Cyclic token refs: ${[...stack, ref].join(" -> ")}`);
-      const nextLeaf = getTokenLeafAtPath(doc, ref);
-      return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref]);
+      if (stack.includes(ref)) {
+        const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+        throw new Error(`Cyclic token refs${ctx}: ${[...stack, ref].join(" -> ")}`);
+      }
+      let nextLeaf: TokenLeaf;
+      try {
+        nextLeaf = getTokenLeafAtPath(doc, ref);
+      } catch (e: any) {
+        const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+        throw new Error(`${e?.message ?? String(e)}${ctx}`);
+      }
+      return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving);
     }
     return chosen;
   }
@@ -70,9 +85,18 @@ export function resolveTokenValue(doc: TokensStudioDoc, leaf: TokenLeaf, themeNa
   // Direct ref
   const ref = unwrapRef(v);
   if (ref) {
-    if (stack.includes(ref)) throw new Error(`Cyclic token refs: ${[...stack, ref].join(" -> ")}`);
-    const nextLeaf = getTokenLeafAtPath(doc, ref);
-    return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref]);
+    if (stack.includes(ref)) {
+      const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+      throw new Error(`Cyclic token refs${ctx}: ${[...stack, ref].join(" -> ")}`);
+    }
+    let nextLeaf: TokenLeaf;
+    try {
+      nextLeaf = getTokenLeafAtPath(doc, ref);
+    } catch (e: any) {
+      const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+      throw new Error(`${e?.message ?? String(e)}${ctx}`);
+    }
+    return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving);
   }
 
   return v;

@@ -1,7 +1,8 @@
 import path from "node:path";
 import type { ForgeUIConfig, Theme, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, listEnabledSetsForTheme, resolveTokenValue } from "./tokens.js";
-import { slugify, toKebab } from "./utils.js";
+import { formatTs } from "./format.js";
+import { isObject, slugify, toKebab } from "./utils.js";
 
 function themeSelector(cfg: ForgeUIConfig, theme: Theme): string {
   const name = theme.name;
@@ -41,7 +42,7 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
       const setObj = (doc as any)[setName];
       const flat = flattenSetTokens(setObj, [setName]);
       for (const t of flat) {
-        const resolved = resolveTokenValue(doc, t.leaf, theme.name);
+        const resolved = resolveTokenValue(doc, t.leaf, theme.name, [], t.fqName);
         const varName = varNameFromTokenPath(t.path);
 
         if (t.leaf.$type === "color" && typeof resolved === "string") {
@@ -79,6 +80,26 @@ function tailwindColorValue(varName: string): string {
   return `rgb(var(${varName}) / <alpha-value>)`;
 }
 
+function tokenPathToTailwindKey(tokenPath: string[], marker: string): string[] {
+  const idx = tokenPath.indexOf(marker);
+  if (idx === -1) return [];
+  return tokenPath.slice(idx + 1);
+}
+
+function setNested(obj: any, keyPath: string[], value: unknown) {
+  let cur = obj;
+  for (let i = 0; i < keyPath.length; i++) {
+    const k = keyPath[i];
+    const last = i === keyPath.length - 1;
+    if (last) {
+      cur[k] = value;
+    } else {
+      cur[k] ??= {};
+      cur = cur[k];
+    }
+  }
+}
+
 export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig): string {
   const rootTheme = cfg.themes.rootTheme;
   const root = getThemes(doc).find((t) => t.name === rootTheme);
@@ -87,26 +108,85 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const enabledSets = listEnabledSetsForTheme(root);
 
   const colors: any = {};
+  const spacing: any = {};
+  const borderRadius: any = {};
+  const boxShadow: any = {};
+
+  // Typography can be expressed either as dedicated tokens ($type=typography)
+  // or as separate tokens like `font.family.*`, `font.size.*`, etc.
+  const fontFamily: any = {};
+  const fontSize: any = {};
+  const fontWeight: any = {};
+  const letterSpacing: any = {};
+  const lineHeight: any = {};
 
   for (const setName of enabledSets) {
     const flat = flattenSetTokens((doc as any)[setName], [setName]);
     for (const t of flat) {
-      if (t.leaf.$type !== "color") continue;
-      const keyPath = tokenPathToTailwindColorKey(t.path);
-      if (keyPath.length === 0) continue;
-      const vname = `--${toKebab(t.path)}`;
+      const fq = t.fqName;
 
-      // Build nested object
-      let cur = colors;
-      for (let i = 0; i < keyPath.length; i++) {
-        const k = keyPath[i];
-        const last = i === keyPath.length - 1;
-        if (last) {
-          cur[k] = tailwindColorValue(vname);
-        } else {
-          cur[k] ??= {};
-          cur = cur[k];
+      if (t.leaf.$type === "color") {
+        const keyPath = tokenPathToTailwindColorKey(t.path);
+        if (keyPath.length === 0) continue;
+        const vname = `--${toKebab(t.path)}`;
+        setNested(colors, keyPath, tailwindColorValue(vname));
+        continue;
+      }
+
+      if (t.leaf.$type === "dimension") {
+        // spacing: {set}.space.*
+        const sKey = tokenPathToTailwindKey(t.path, "space");
+        if (sKey.length) {
+          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+          setNested(spacing, sKey, String(resolved));
+          continue;
         }
+
+        // radius: {set}.radius.*
+        const rKey = tokenPathToTailwindKey(t.path, "radius");
+        if (rKey.length) {
+          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+          setNested(borderRadius, rKey, String(resolved));
+          continue;
+        }
+      }
+
+      if (t.leaf.$type === "shadow") {
+        const shKey = tokenPathToTailwindKey(t.path, "shadow");
+        if (shKey.length) {
+          const vname = `--${toKebab(t.path)}`;
+          setNested(boxShadow, shKey, `var(${vname})`);
+        }
+        continue;
+      }
+
+      if (t.leaf.$type === "typography") {
+        const key = tokenPathToTailwindKey(t.path, "typography");
+        if (!key.length) continue;
+        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+        if (!isObject(resolved)) continue;
+
+        const k = key.join("-");
+        const ff = (resolved as any).fontFamily;
+        const fs = (resolved as any).fontSize;
+        const fw = (resolved as any).fontWeight;
+        const ls = (resolved as any).letterSpacing;
+        const lh = (resolved as any).lineHeight;
+
+        if (ff) fontFamily[k] = Array.isArray(ff) ? ff : [String(ff)];
+        if (fw) fontWeight[k] = String(fw);
+        if (ls) letterSpacing[k] = String(ls);
+        if (lh) lineHeight[k] = String(lh);
+        if (fs) {
+          // Allow Tailwind to accept either a string or [size, options].
+          const opts: any = {};
+          if (lh) opts.lineHeight = String(lh);
+          if (ls) opts.letterSpacing = String(ls);
+          if (fw) opts.fontWeight = String(fw);
+          fontSize[k] = Object.keys(opts).length ? [String(fs), opts] : String(fs);
+        }
+
+        continue;
       }
     }
   }
@@ -115,16 +195,23 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     darkMode: ["class", "[data-theme='dark']"],
     theme: {
       extend: {
-        colors
+        colors,
+        spacing,
+        borderRadius,
+        boxShadow,
+        fontFamily,
+        fontSize,
+        fontWeight,
+        letterSpacing,
+        lineHeight
       }
     }
   };
 
-  return `/* Generated by ForgeUI. Do not edit by hand. */\n\nconst preset = ${JSON.stringify(
-    preset,
-    null,
-    2
-  )} as const;\n\nexport default preset;\n`;
+  const relOut = cfg.outDir.replace(/^\.\//, "");
+  const usage = `/*\nTailwind v4 usage (CSS-first):\n\n  // in your app CSS\n  @import \"tailwindcss\";\n  @config \"./${relOut}/${cfg.tailwind.presetFile}\";\n\n  // ensure this is loaded too\n  @import \"./${relOut}/${cfg.tailwind.cssFile}\";\n*/`;
+
+  return `/* Generated by ForgeUI. Do not edit by hand. */\n\n${usage}\n\nconst preset = ${formatTs(preset)} as const;\n\nexport default preset;\n`;
 }
 
 export function outPath(cfg: ForgeUIConfig, file: string): string {
