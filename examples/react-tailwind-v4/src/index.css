@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@config "../../../forgeui/forgeui.preset.ts";
+
+@import "../../../forgeui/tokens.css";
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+}
