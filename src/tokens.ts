@@ -56,30 +56,36 @@ export function resolveTokenValue(
   leaf: TokenLeaf,
   themeName: string,
   stack: string[] = [],
-  resolving?: string
+  resolving?: string,
+  themeFallbacks?: string[]
 ): unknown {
   const v = leaf.$value;
 
-  // If value is a theme map, select by theme name.
-  if (isObject(v) && themeName in v) {
-    const chosen = (v as any)[themeName];
-    // chosen might itself be a ref string
-    const ref = unwrapRef(chosen);
-    if (ref) {
-      if (stack.includes(ref)) {
-        const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
-        throw new Error(`Cyclic token refs${ctx}: ${[...stack, ref].join(" -> ")}`);
+  // If value is a theme map, select by theme name (with optional fallback chain).
+  if (isObject(v)) {
+    const chain = themeFallbacks?.length ? themeFallbacks : [themeName];
+    const picked = chain.find((t) => t in v);
+    if (picked) {
+      const chosen = (v as any)[picked];
+
+      // chosen might itself be a ref string
+      const ref = unwrapRef(chosen);
+      if (ref) {
+        if (stack.includes(ref)) {
+          const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+          throw new Error(`Cyclic token refs${ctx}: ${[...stack, ref].join(" -> ")}`);
+        }
+        let nextLeaf: TokenLeaf;
+        try {
+          nextLeaf = getTokenLeafAtPath(doc, ref);
+        } catch (e: any) {
+          const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
+          throw new Error(`${e?.message ?? String(e)}${ctx}`);
+        }
+        return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving, themeFallbacks);
       }
-      let nextLeaf: TokenLeaf;
-      try {
-        nextLeaf = getTokenLeafAtPath(doc, ref);
-      } catch (e: any) {
-        const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
-        throw new Error(`${e?.message ?? String(e)}${ctx}`);
-      }
-      return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving);
+      return chosen;
     }
-    return chosen;
   }
 
   // Direct ref
@@ -96,7 +102,7 @@ export function resolveTokenValue(
       const ctx = resolving ? ` while resolving ${resolving} (${themeName})` : "";
       throw new Error(`${e?.message ?? String(e)}${ctx}`);
     }
-    return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving);
+    return resolveTokenValue(doc, nextLeaf, themeName, [...stack, ref], resolving, themeFallbacks);
   }
 
   return v;

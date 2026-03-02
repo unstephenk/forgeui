@@ -1,5 +1,6 @@
 import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, listEnabledSetsForTheme, resolveTokenValue } from "./tokens.js";
+import { themeFallbackChain } from "./theme.js";
 import { toKebab } from "./utils.js";
 
 export type TokenIndexEntry = {
@@ -26,7 +27,7 @@ export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): { 
       const cssVar = `--${toKebab(t.path)}`;
       const themesMap: Record<string, unknown> = {};
       for (const th of themes) {
-        themesMap[th.name] = resolveTokenValue(doc, t.leaf, th.name, [], t.fqName);
+        themesMap[th.name] = resolveTokenValue(doc, t.leaf, th.name, [], t.fqName, themeFallbackChain(cfg, th.name));
       }
       out.push({ token: t.fqName, type: t.leaf.$type, cssVar, themes: themesMap });
     }

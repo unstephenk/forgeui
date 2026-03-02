@@ -20,6 +20,9 @@ export function defaultConfig(): ForgeUIConfig {
       selectorByTheme: {
         Light: ":root",
         Dark: ["[data-theme=\"dark\"]", ".dark"]
+      },
+      fallbacks: {
+        Dark: ["Light"]
       }
     },
     filter: {

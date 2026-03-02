@@ -1,4 +1,4 @@
-import type { Theme, TokenLeaf, TokensStudioDoc } from "./types.js";
+import type { ForgeUIConfig, Theme, TokenLeaf, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, getTokenLeafAtPath, listEnabledSetsForTheme } from "./tokens.js";
 import { isObject, unwrapRef } from "./utils.js";
 
@@ -9,7 +9,7 @@ export type ForgeUIWarning = {
   theme?: string;
 };
 
-export function validateTokensDoc(doc: TokensStudioDoc): { themes: Theme[]; warnings: ForgeUIWarning[] } {
+export function validateTokensDoc(doc: TokensStudioDoc, cfg?: ForgeUIConfig): { themes: Theme[]; warnings: ForgeUIWarning[] } {
   const warnings: ForgeUIWarning[] = [];
 
   if (!Array.isArray(doc.$themes) || doc.$themes.length === 0) {
@@ -47,9 +47,13 @@ export function validateTokensDoc(doc: TokensStudioDoc): { themes: Theme[]; warn
           // If it looks like a theme map (contains any theme name), warn if missing this theme
           const looksLikeThemeMap = themes.some((th) => th.name in v);
           if (looksLikeThemeMap && !(theme.name in v)) {
+            const fb = cfg?.themes.fallbacks?.[theme.name] ?? [];
+            const hasFallback = fb.some((tname) => tname in v) || (cfg?.themes.rootTheme && cfg.themes.rootTheme in v);
             warnings.push({
               code: "MISSING_THEME_VALUE",
-              message: `Token '${t.fqName}' is a theme map but has no value for theme '${theme.name}'.`,
+              message: hasFallback
+                ? `Token '${t.fqName}' is a theme map missing '${theme.name}' (will fall back).`
+                : `Token '${t.fqName}' is a theme map but has no value for theme '${theme.name}'.`,
               token: t.fqName,
               theme: theme.name
             });

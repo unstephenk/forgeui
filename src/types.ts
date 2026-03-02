@@ -31,6 +31,9 @@ export type ForgeUIConfig = {
   themes: {
     rootTheme: string; // e.g. "Light"
     selectorByTheme?: Record<string, string | string[]>; // explicit overrides
+    // Optional per-theme fallback chain when a theme-mapped token is missing a value.
+    // Example: { "Dark": ["Light"] }
+    fallbacks?: Record<string, string[]>;
   };
   filter?: {
     // Matched against fully-qualified token path like: core.color.brand.500

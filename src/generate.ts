@@ -175,7 +175,7 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
         if (include && !include(fq)) continue;
         if (exclude && exclude(fq)) continue;
 
-        const resolved = resolveTokenValue(doc, t.leaf, theme.name, [], fq);
+        const resolved = resolveTokenValue(doc, t.leaf, theme.name, [], fq, [theme.name, ...(cfg.themes.fallbacks?.[theme.name] ?? []), cfg.themes.rootTheme].filter(Boolean));
         const varName = varNameFromTokenPath(t.path);
 
         if (t.leaf.$type === "color" && typeof resolved === "string") {
@@ -296,7 +296,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         // spacing: {set}.space.*
         const sKey = tokenPathToTailwindKey(t.path, "space");
         if (sKey.length) {
-          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
           setNested(spacing, sKey, normalizeDimension(resolved));
           continue;
         }
@@ -304,7 +304,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         // radius: {set}.radius.*
         const rKey = tokenPathToTailwindKey(t.path, "radius");
         if (rKey.length) {
-          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+          const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
           setNested(borderRadius, rKey, normalizeDimension(resolved));
           continue;
         }
@@ -322,7 +322,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
       if (t.leaf.$type === "typography") {
         const key = tokenPathToTailwindKey(t.path, "typography");
         if (!key.length) continue;
-        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq);
+        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
         if (!isObject(resolved)) continue;
 
         const k = key.join("-");
