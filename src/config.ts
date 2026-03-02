@@ -33,6 +33,7 @@ export function defaultConfig(): ForgeUIConfig {
     },
     tailwind: {
       cssFile: "tokens.css",
+      themeFile: "forgeui.theme.ts",
       presetFile: "forgeui.preset.ts",
       darkThemeName: "Dark",
       map: {
@@ -41,6 +42,9 @@ export function defaultConfig(): ForgeUIConfig {
           // "bg": "surface"
         }
       }
+    },
+    format: {
+      prettier: false
     }
   };
 }

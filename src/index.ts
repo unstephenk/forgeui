@@ -7,10 +7,12 @@ import { cac } from "cac";
 
 import { DEFAULT_CONFIG_FILES, configTemplate, loadConfig, resolveConfigPath } from "./config.js";
 import { generateTailwindPreset, generateTokensCss, outPath } from "./generate.js";
+import { maybePrettifyTs } from "./prettier.js";
 import { makeLock, makeManifest } from "./lock.js";
 import type { TokensStudioDoc } from "./types.js";
 import { ensureDir, readJsonFile, writeFile } from "./utils.js";
 import { diffText } from "./textdiff.js";
+import { validateTokensDoc } from "./validate.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -68,27 +70,54 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
   const cfg = await loadConfig(cfgPath);
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
+  const validation = validateTokensDoc(doc);
 
   const css = generateTokensCss(doc, cfg);
-  const preset = generateTailwindPreset(doc, cfg);
+  const gen = generateTailwindPreset(doc, cfg);
+  const preset = await maybePrettifyTs(gen.preset, cfg.format?.prettier);
+  const themeFragment = gen.themeFragment ? await maybePrettifyTs(gen.themeFragment, cfg.format?.prettier) : undefined;
 
   const cssPath = outPath(cfg, cfg.tailwind.cssFile);
   const presetPath = outPath(cfg, cfg.tailwind.presetFile);
+  const themePath = cfg.tailwind.themeFile ? outPath(cfg, cfg.tailwind.themeFile) : null;
   const lockPath = outPath(cfg, "forgeui.lock.json");
   const manifestPath = outPath(cfg, "forgeui.manifest.json");
 
   if (params?.write !== false) {
-    writeFile(cssPath, css);
-    writeFile(presetPath, preset);
+    // print warnings (non-fatal)
+    if (validation.warnings.length && !GLOBAL.json) {
+      for (const w of validation.warnings) {
+        const where = [w.theme ? `theme=${w.theme}` : null, w.token ? `token=${w.token}` : null]
+          .filter(Boolean)
+          .join(" ");
+        console.warn(`[forgeui warning] ${w.code}${where ? ` (${where})` : ""}: ${w.message}`);
+      }
+    }
+
+    // incremental: only write changed files
+    const writeIfChanged = (p: string, next: string) => {
+      const prev = fs.existsSync(p) ? fs.readFileSync(p, "utf8") : null;
+      if (prev === next) return false;
+      writeFile(p, next);
+      return true;
+    };
+
+    writeIfChanged(cssPath, css);
+    writeIfChanged(presetPath, preset);
+    if (themePath && themeFragment) writeIfChanged(themePath, themeFragment);
 
     const v = getForgeuiVersion();
+    const outputs = [cfg.tailwind.cssFile, cfg.tailwind.presetFile];
+    if (cfg.tailwind.themeFile) outputs.push(cfg.tailwind.themeFile);
+    outputs.push("forgeui.lock.json", "forgeui.manifest.json");
+
     const manifest = makeManifest({
       forgeuiVersion: v,
       cfg,
       configFile: cfgPath,
       tokensFile: cfg.tokensPath,
       doc,
-      outputs: [cfg.tailwind.cssFile, cfg.tailwind.presetFile, "forgeui.lock.json", "forgeui.manifest.json"]
+      outputs
     });
 
     // write manifest first (so lock can include its hash if desired later)
@@ -101,21 +130,37 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
       outputsAbs: {
         [cfg.tailwind.cssFile]: cssPath,
         [cfg.tailwind.presetFile]: presetPath,
+        ...(cfg.tailwind.themeFile && themePath ? { [cfg.tailwind.themeFile]: themePath } : {}),
         "forgeui.manifest.json": manifestPath
       }
     });
 
     writeFile(lockPath, JSON.stringify(lock, null, 2) + "\n");
 
-    const written = [cssPath, presetPath, lockPath, manifestPath].map((p) => path.relative(process.cwd(), p));
+    const writtenAbs = [cssPath, presetPath, lockPath, manifestPath];
+    if (themePath) writtenAbs.splice(2, 0, themePath);
+    const written = writtenAbs.map((p) => path.relative(process.cwd(), p));
     if (GLOBAL.json) {
-      process.stdout.write(JSON.stringify({ ok: true, written }, null, 2) + "\n");
+      process.stdout.write(
+        JSON.stringify({ ok: true, written, warnings: validation.warnings, warningCount: validation.warnings.length }, null, 2) +
+          "\n"
+      );
     } else {
       for (const p of written) log(`Wrote ${p}`);
     }
   }
 
-  return { cfgPath, tokensAbs, cssPath, presetPath, lockPath, manifestPath, css, preset };
+  return {
+    cfgPath,
+    tokensAbs,
+    cssPath,
+    presetPath,
+    lockPath,
+    manifestPath,
+    css,
+    preset,
+    ...(themePath && themeFragment ? { themePath, themeFragment } : {})
+  } as any;
 }
 
 cli

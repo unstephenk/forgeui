@@ -46,13 +46,17 @@ export type ForgeUIConfig = {
     alsoEmitClassDark?: boolean;
   };
   tailwind: {
-    presetFile: string;
     cssFile: string;
+    themeFile?: string; // optional separate theme fragment (e.g. "forgeui.theme.ts")
+    presetFile: string;
     darkThemeName: string; // e.g. "Dark"
     map?: {
       // Prefix remaps, e.g. { "bg": "surface" } or { "fg.default": "text.DEFAULT" }
       // Applied to color keys only (for now).
       colors?: Record<string, string>;
     };
+  };
+  format?: {
+    prettier?: boolean;
   };
 };
