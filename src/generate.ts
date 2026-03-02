@@ -31,6 +31,56 @@ function hexToRgbTriplet(hex: string): string | null {
   return `${r} ${g} ${b}`;
 }
 
+function rgbFuncToTriplet(v: string): string | null {
+  // supports rgb(1 2 3) / rgb(1,2,3) / rgba(1,2,3,0.5)
+  const s = v.trim();
+  const m = s.match(/^rgba?\((.*)\)$/i);
+  if (!m) return null;
+  const inner = m[1].trim();
+
+  // split on commas or whitespace
+  const parts = inner.includes(",")
+    ? inner.split(",").map((p) => p.trim())
+    : inner
+        .replace(/\s*\/\s*.*$/, "") // drop / alpha if present
+        .trim()
+        .split(/\s+/)
+        .map((p) => p.trim());
+
+  if (parts.length < 3) return null;
+  const [r, g, b] = parts;
+  const rn = Number(r);
+  const gn = Number(g);
+  const bn = Number(b);
+  if (![rn, gn, bn].every((n) => Number.isFinite(n))) return null;
+  return `${rn} ${gn} ${bn}`;
+}
+
+function shadowToCssValue(resolved: unknown): string {
+  // Tokens Studio shadow can be an array of shadow objects.
+  // We accept either:
+  // - string (already a css box-shadow)
+  // - array of { offsetX, offsetY, blur, spread, color, inset? }
+  if (typeof resolved === "string") return resolved;
+  if (!Array.isArray(resolved)) return String(resolved);
+
+  const parts: string[] = [];
+  for (const s of resolved) {
+    if (!isObject(s)) {
+      parts.push(String(s));
+      continue;
+    }
+    const inset = (s as any).inset ? "inset " : "";
+    const ox = (s as any).offsetX ?? "0px";
+    const oy = (s as any).offsetY ?? "0px";
+    const blur = (s as any).blur ?? "0px";
+    const spread = (s as any).spread ?? "0px";
+    const color = (s as any).color ?? "rgba(0,0,0,0)";
+    parts.push(`${inset}${ox} ${oy} ${blur} ${spread} ${color}`.trim());
+  }
+  return parts.join(", ");
+}
+
 export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): string {
   const themes = getThemes(doc);
 
@@ -59,11 +109,10 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
         const varName = varNameFromTokenPath(t.path);
 
         if (t.leaf.$type === "color" && typeof resolved === "string") {
-          const rgb = hexToRgbTriplet(resolved);
+          const rgb = hexToRgbTriplet(resolved) ?? rgbFuncToTriplet(resolved);
           lines.push(`  ${varName}: ${rgb ?? resolved};`);
         } else if (t.leaf.$type === "shadow") {
-          // Minimal: stringify for now; Tailwind boxShadow will use same string.
-          lines.push(`  ${varName}: ${JSON.stringify(resolved)};`);
+          lines.push(`  ${varName}: ${shadowToCssValue(resolved)};`);
         } else {
           lines.push(`  ${varName}: ${String(resolved)};`);
         }

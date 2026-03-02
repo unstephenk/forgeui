@@ -18,7 +18,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 4. **Plugin system (v1)**: allow custom generators via config + hooks.
 5. **Validation strict mode**: upgrade warnings to errors with `--strict`.
 6. **Token docs generator**: output `tokens.md` or a JSON index for docs sites.
-7. **Better shadow support**: translate Tokens Studio shadow arrays into CSS box-shadow strings.
-8. **Color transforms**: support `rgba()`/`hsl()` inputs and output stable rgb triplets.
-9. **Tailwind v3 compatibility**: optional output mode for legacy projects.
-10. **Config schema**: emit JSON schema + editor intellisense for config.
+7. **HSL transforms**: support `hsl()` inputs and output stable rgb triplets.
+8. **Tailwind v3 compatibility**: optional output mode for legacy projects.
+9. **Config schema**: emit JSON schema + editor intellisense for config.
+10. **Token normalization**: normalize units (`px`, `rem`) + numeric keys.
