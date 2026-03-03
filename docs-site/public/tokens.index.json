@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-03-03T02:37:18.581Z",
+  "tokens": [
+    {
+      "token": "components.button.bg.default",
+      "type": "color",
+      "cssVar": "--components-button-bg-default",
+      "themes": {
+        "Light": "#6366F1",
+        "Dark": "#818CF8"
+      }
+    },
+    {
+      "token": "components.button.radius",
+      "type": "dimension",
+      "cssVar": "--components-button-radius",
+      "themes": {
+        "Light": "10px",
+        "Dark": "10px"
+      }
+    },
+    {
+      "token": "core.color.bg.default",
+      "type": "color",
+      "cssVar": "--core-color-bg-default",
+      "themes": {
+        "Light": "#FFFFFF",
+        "Dark": "#0B0F19"
+      }
+    },
+    {
+      "token": "core.color.brand.500",
+      "type": "color",
+      "cssVar": "--core-color-brand-500",
+      "themes": {
+        "Light": "#6366F1",
+        "Dark": "#818CF8"
+      }
+    },
+    {
+      "token": "core.color.fg.default",
+      "type": "color",
+      "cssVar": "--core-color-fg-default",
+      "themes": {
+        "Light": "#0B0F19",
+        "Dark": "#F8FAFC"
+      }
+    },
+    {
+      "token": "core.radius.md",
+      "type": "dimension",
+      "cssVar": "--core-radius-md",
+      "themes": {
+        "Light": "10px",
+        "Dark": "10px"
+      }
+    },
+    {
+      "token": "core.space.4",
+      "type": "dimension",
+      "cssVar": "--core-space-4",
+      "themes": {
+        "Light": "16px",
+        "Dark": "16px"
+      }
+    },
+    {
+      "token": "core.space.8",
+      "type": "dimension",
+      "cssVar": "--core-space-8",
+      "themes": {
+        "Light": "32px",
+        "Dark": "32px"
+      }
+    }
+  ]
+}

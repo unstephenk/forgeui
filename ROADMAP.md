@@ -12,13 +12,13 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - example React + Tailwind v4 app
 
 ## Next (keep >= 10)
-1. **Docs site**: simple VitePress/Docusaurus site consuming `tokens.index.json`.
-2. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
-3. **Tailwind v3 compatibility**: optional output mode for legacy projects.
-4. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.
-5. **Plugin system (v1)**: allow custom generators via config + hooks.
-6. **Component scaffolding (v1)**: `forgeui scaffold <component>` for React + Tailwind.
-7. **Storybook integration (v1)**: auto-generate token docs page + theme switcher.
-8. **Type coverage**: tighten token typing + runtime guards for token leaves.
-9. **CLI UX**: add `--outDir` override + clearer errors for missing files/sets.
-10. **Release UX**: document the release process end-to-end (changeset → tag → publish).
+1. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
+2. **Tailwind v3 compatibility**: optional output mode for legacy projects.
+3. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.
+4. **Plugin system (v1)**: allow custom generators via config + hooks.
+5. **Component scaffolding (v1)**: `forgeui scaffold <component>` for React + Tailwind.
+6. **Type coverage**: tighten token typing + runtime guards for token leaves.
+7. **CLI UX**: add `--outDir` override + clearer errors for missing files/sets.
+8. **Release UX**: document the release process end-to-end (changeset → tag → publish).
+9. **Docs site polish**: search, grouping by namespace, theming.
+10. **Docs publishing**: GitHub Pages deploy for docs-site.
