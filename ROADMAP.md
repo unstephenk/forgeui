@@ -48,6 +48,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - figma pull: persist cached snapshots to disk + materialize output on 304 when missing
 - validate: exit non-zero when warnings exist + print a summary line
 - release: helper now does preflight + build + pack smoke + annotated tag + push (with --dry-run/--no-push)
+- ci: build docs-site + verify Pages base path/assets on ubuntu+windows
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
@@ -55,7 +56,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 3. **Docs site**: auto-generate namespace pages from tokens.index.json.
 4. **Release**: improve helper (preflight checks + dry-run + clearer output).
 5. **Docs site**: add a CI job that builds Pages output on PRs.
-6. **CI**: add docs-site build + base-path verification to the main CI workflow.
+6. **CI**: add docs-site Pages build to PR checks only (skip on non-doc changes).
 7. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
 8. **Tailwind**: add v3 mode golden tests for themeFile split output.
 9. **CLI**: allow `forgeui docs --md` to pick group ordering options.
