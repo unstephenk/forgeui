@@ -37,17 +37,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: dark mode variables + enable appearance toggle
 - figma pull: add ETag caching (If-None-Match + 304 unchanged)
 - plugins: add hook coverage tests + example plugin that mutates outputs
+- figma pull: retry 429 rate limits (Retry-After)
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
 2. **Plugins**: add a "prettier" example plugin + docs on option validation.
 3. **Docs site**: auto-generate namespace pages from tokens.index.json.
 4. **Docs site**: add namespace filters to search.
-5. **Figma pull**: handle 429 rate limits (Retry-After) gracefully.
-6. **Release**: improve helper (preflight checks + dry-run + clearer output).
-7. **Docs site**: add a CI job that builds Pages output on PRs.
-8. **Docs**: polish tokens.md output (group sections + anchors).
-9. **Validate**: unsupported leaf reporting w/ JSON paths.
-10. **CI**: add docs-site build + base-path verification to the main CI workflow.
-11. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
-12. **Docs site**: add Pages deploy verification test (base path + asset URLs).
+5. **Release**: improve helper (preflight checks + dry-run + clearer output).
+6. **Docs site**: add a CI job that builds Pages output on PRs.
+7. **Docs**: polish tokens.md output (group sections + anchors).
+8. **Validate**: unsupported leaf reporting w/ JSON paths.
+9. **CI**: add docs-site build + base-path verification to the main CI workflow.
+10. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+11. **Docs site**: add Pages deploy verification test (base path + asset URLs).
+12. **Tailwind**: add v3 mode golden tests for themeFile split output.

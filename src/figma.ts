@@ -13,6 +13,39 @@ type FigmaPullParams = {
   token?: string;
 };
 
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function retryAfterMs(h: string | null): number | null {
+  if (!h) return null;
+  const s = h.trim();
+  if (!s) return null;
+  // seconds
+  if (/^\d+$/.test(s)) return Math.max(0, Number(s)) * 1000;
+  // HTTP date
+  const t = Date.parse(s);
+  if (!Number.isFinite(t)) return null;
+  return Math.max(0, t - Date.now());
+}
+
+async function fetchWithRateLimit(url: string, init: RequestInit, opts?: { retries?: number }): Promise<Response> {
+  const retries = opts?.retries ?? 3;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url, init);
+    if (res.status !== 429) return res;
+
+    if (attempt === retries) return res;
+
+    const ra = retryAfterMs(res.headers.get("retry-after"));
+    const backoff = 500 * Math.pow(2, attempt);
+    const delay = Math.min(30_000, ra ?? backoff);
+    await sleep(delay);
+  }
+  // unreachable
+  return fetch(url, init);
+}
+
 function tryParseJson(input: unknown): any | null {
   if (typeof input !== "string") return null;
   const s = input.trim();
@@ -99,7 +132,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     const cacheKey = `url:${url}`;
     const etag = cache[cacheKey]?.etag;
 
-    const res = await fetch(url, {
+    const res = await fetchWithRateLimit(url, {
       headers: {
         ...(token ? { "X-Figma-Token": token } : {}),
         ...(etag ? { "If-None-Match": etag } : {})
@@ -140,7 +173,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     const cacheKey = `node:${fileKey}:${nodeId}`;
     const etag = cache[cacheKey]?.etag;
 
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithRateLimit(apiUrl, {
       headers: {
         "X-Figma-Token": token,
         ...(etag ? { "If-None-Match": etag } : {})
