@@ -52,8 +52,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
-2. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+1. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+2. **Docs site**: token table keyboard navigation (j/k, enter to open).
 3. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
 4. **Docs site**: token table keyboard navigation (j/k, enter to open).
 5. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).

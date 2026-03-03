@@ -70,7 +70,16 @@ if (dryRun) {
 console.log(`[forgeui release] Creating annotated tag ${tag}…`);
 run(`git tag -a ${tag} -m ${JSON.stringify(tag)}`);
 
+const actionsReleaseUrl = 'https://github.com/unstephenk/forgeui/actions/workflows/release.yml';
+
 console.log(`[forgeui release] Done. Pushing the tag triggers the GitHub Actions release workflow.`);
+console.log(`[forgeui release] Release workflow: ${actionsReleaseUrl}`);
+
+console.log('\n[forgeui release] Post-release checklist:');
+console.log(`- Verify the Release workflow completed: ${actionsReleaseUrl}`);
+console.log(`- Confirm npm package is published: https://www.npmjs.com/package/@forgeui/cli`);
+console.log(`- Confirm GitHub Release exists: https://github.com/unstephenk/forgeui/releases/tag/${tag}`);
+console.log(`- Smoke test install in a fresh folder: npm i -D @forgeui/cli && npx forgeui --help`);
 
 if (push) {
   console.log(`[forgeui release] Pushing main + tag…`);

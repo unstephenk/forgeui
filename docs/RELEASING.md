@@ -46,3 +46,6 @@ The `Release` workflow will:
 - run `npm publish --dry-run`
 - publish to npm
 - create a GitHub Release with generated notes
+
+Release workflow:
+- https://github.com/unstephenk/forgeui/actions/workflows/release.yml
