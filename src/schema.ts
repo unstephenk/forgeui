@@ -17,8 +17,10 @@ export const CONFIG_SCHEMA = {
         type: "object",
         additionalProperties: false,
         properties: {
+          name: { type: "string" },
           module: { type: "string" },
-          options: { type: "object", additionalProperties: true }
+          options: { type: "object", additionalProperties: true },
+          enabled: { type: "boolean" }
         },
         required: ["module"]
       }

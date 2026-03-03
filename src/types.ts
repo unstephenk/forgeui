@@ -30,8 +30,12 @@ export type ForgeUIConfig = {
   tokensPath: string;
   outDir: string;
   plugins?: {
+    // Optional label used in logs/errors (defaults to plugin export name/module).
+    name?: string;
     module: string;
     options?: Record<string, unknown>;
+    // If false, the plugin is skipped.
+    enabled?: boolean;
   }[];
   themes: {
     rootTheme: string; // e.g. "Light"

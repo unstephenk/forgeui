@@ -51,4 +51,40 @@ describe("plugins", () => {
     await runHook([p1, p2], "beforeGenerate", { cfg: {} as any, doc: { $themes: [] } as any });
     expect(calls).toEqual(["p1", "p2"]);
   });
+
+  it("skips plugins with enabled=false", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "forgeui-plugin-"));
+    const prev = process.cwd();
+
+    try {
+      process.chdir(tmp);
+
+      fs.writeFileSync(path.join(tmp, "p1.js"), `export default { name: 'p1', hooks: { beforeGenerate(){ throw new Error('should not run') } } }\n`, "utf8");
+      fs.writeFileSync(path.join(tmp, "p2.js"), `export default { name: 'p2' }\n`, "utf8");
+
+      const cfg: ForgeUIConfig = {
+        tokensPath: "./tokens.json",
+        outDir: "./forgeui",
+        plugins: [
+          { module: "./p1.js", enabled: false },
+          { module: "./p2.js" },
+        ],
+        themes: { rootTheme: "Light" },
+        css: {},
+        tailwind: { cssFile: "tokens.css", presetFile: "forgeui.preset.ts", darkThemeName: "Dark" },
+      };
+
+      const plugins = await loadPlugins(cfg);
+      expect(plugins.map((p) => p.__forgeui?.name)).toEqual(["p2"]);
+    } finally {
+      process.chdir(prev);
+    }
+  });
+
+  it("includes plugin + hook context on errors", async () => {
+    const p: any = { __forgeui: { name: "p", module: "./p.js" }, hooks: { afterGenerate: () => { throw new Error("boom") } } };
+    await expect(runHook([p], "afterGenerate", { cfg: {} as any, doc: { $themes: [] } as any })).rejects.toThrow(
+      /Plugin p \(\.\/p\.js\) failed in afterGenerate: boom/
+    );
+  });
 });
