@@ -82,6 +82,26 @@ export function resolveConfigPath(explicit?: string): string {
   throw new Error(`Multiple configs found: ${found.join(", ")}. Delete extras or pass --config.`);
 }
 
+export function unwrapConfigModule(mod: any): ForgeUIConfig {
+  // Supported shapes:
+  // - ESM default export: { default: config }
+  // - CJS export: module.exports = config
+  // - transpiled interop: { default: { default: config } }
+  // - config factory: () => config
+  let cur: any = mod;
+
+  for (let i = 0; i < 3; i++) {
+    if (typeof cur === "function") cur = cur();
+    if (cur && typeof cur === "object" && "default" in cur && cur.default != null) {
+      cur = (cur as any).default;
+      continue;
+    }
+    break;
+  }
+
+  return cur as ForgeUIConfig;
+}
+
 export async function loadConfig(configPath?: string): Promise<ForgeUIConfig> {
   const chosen = resolveConfigPath(configPath);
   const abs = path.resolve(process.cwd(), chosen);
@@ -90,6 +110,5 @@ export async function loadConfig(configPath?: string): Promise<ForgeUIConfig> {
   }
   const jiti = jitiFactory(process.cwd(), { interopDefault: true });
   const mod = jiti(abs);
-  const cfg: ForgeUIConfig = (mod?.default ?? mod) as ForgeUIConfig;
-  return cfg;
+  return unwrapConfigModule(mod);
 }

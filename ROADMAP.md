@@ -22,15 +22,16 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Type/runtime guards: expand guards + validation messages
 - Token normalization: dimensions unit normalization + optional px/rem conversion
 - docs-site: token table permalinks + linkable anchors
+- Config DX: unwrap more config export shapes (default, nested default, factory)
 
 ## Next (keep >= 10)
-1. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
-2. **Docs site**: add per-theme column toggles.
-3. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
-4. **Docs site**: render token "type" badges and sortable columns.
-5. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
-6. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
-7. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
-8. **Plugins**: document plugin authoring + provide an example plugin.
-9. **CLI**: add `--debug` to print stacks for errors.
-10. **Validate**: detect tokens with missing `$value` and emit a warning.
+1. **Docs site**: add per-theme column toggles.
+2. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
+3. **Docs site**: render token "type" badges and sortable columns.
+4. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
+5. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
+6. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
+7. **Plugins**: document plugin authoring + provide an example plugin.
+8. **CLI**: add `--debug` to print stacks for errors.
+9. **Validate**: detect tokens with missing `$value` and emit a warning.
+10. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
