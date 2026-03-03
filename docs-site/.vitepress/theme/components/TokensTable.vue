@@ -73,8 +73,9 @@ import { withBase } from 'vitepress'
 
 type Entry = { token: string; type: string; cssVar: string; themes?: Record<string, any> }
 
-const props = defineProps<{ ns?: '' | 'core' | 'components' }>()
+const props = defineProps<{ ns?: '' | 'core' | 'components'; type?: string }>()
 const ns = props.ns ?? ''
+const typeFilter = computed(() => (props.type ? String(props.type) : ''))
 
 const loading = ref(true)
 const error = ref('')
@@ -101,6 +102,8 @@ const filtered = computed(() => {
     const n = String(t.token).split('.')[0] || 'other'
     if (ns && n !== ns) return false
     if (!ns && nsFilter.value && n !== nsFilter.value) return false
+    if (typeFilter.value && String(t.type) !== typeFilter.value) return false
+
     const qq = q.value.trim().toLowerCase()
     if (!qq) return true
     const hay = [t.token, t.type, t.cssVar, ...Object.values(t.themes ?? {})].join(' ').toLowerCase()

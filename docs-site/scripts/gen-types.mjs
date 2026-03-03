@@ -38,12 +38,9 @@ for (const t of types) {
     `<p><a href=\"../tokens\">← Back to Tokens</a></p>`,
     '',
     '<ClientOnly>',
-    `  <TokensTable />`,
+    `  <TokensTable type=\"${t}\" />`,
     '</ClientOnly>',
     '',
-    '',
-    `<!-- Tip: use the search box and type: type:${t} -->`,
-    ''
   ].join('\n')
   fs.writeFileSync(path.join(outDir, `${t}.md`), md)
 }
