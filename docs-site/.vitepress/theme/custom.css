@@ -1,0 +1,22 @@
+:root {
+  --vp-c-brand-1: #6366f1;
+  --vp-c-brand-2: #4f46e5;
+  --vp-c-brand-3: #4338ca;
+  --vp-font-family-base: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+/* Tables are the whole point of token docs. */
+.vp-doc table {
+  display: block;
+  overflow-x: auto;
+}
+
+.vp-doc th,
+.vp-doc td {
+  white-space: nowrap;
+}
+
+.vp-doc code {
+  font-size: 0.9em;
+}

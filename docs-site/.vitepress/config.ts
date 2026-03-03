@@ -4,6 +4,9 @@ export default defineConfig({
   title: 'ForgeUI',
   description: 'Tokens Studio → Tailwind + CSS vars',
   themeConfig: {
+    search: {
+      provider: 'local',
+    },
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Tokens', link: '/tokens' },
