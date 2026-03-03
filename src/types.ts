@@ -52,6 +52,14 @@ export type ForgeUIConfig = {
     cssFile: string;
     themeFile?: string; // optional separate theme fragment (e.g. "forgeui.theme.ts")
     presetFile: string;
+    // Optional: output module format for the Tailwind preset.
+    // - esm: `export default preset` (best for Tailwind v4 CSS-first and ESM configs)
+    // - cjs: `module.exports = preset` (helps Tailwind v3 + CommonJS configs)
+    presetFormat?: "esm" | "cjs";
+    // Optional: controls the usage snippet embedded in the generated preset.
+    // - v4: CSS-first `@config` wiring
+    // - v3: `tailwind.config.*` `presets: [...]` wiring
+    presetUsage?: "v4" | "v3";
     darkThemeName: string; // e.g. "Dark"
     map?: {
       // Prefix remaps, e.g. { "bg": "surface" } or { "fg.default": "text.DEFAULT" }

@@ -39,6 +39,8 @@ export function defaultConfig(): ForgeUIConfig {
       // Optional: emit a separate Tailwind theme fragment and import it from the preset.
       // themeFile: "forgeui.theme.ts",
       presetFile: "forgeui.preset.ts",
+      presetFormat: "esm",
+      presetUsage: "v4",
       darkThemeName: "Dark",
       map: {
         colors: {
