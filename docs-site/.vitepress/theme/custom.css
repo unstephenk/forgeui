@@ -6,6 +6,13 @@
     'Segoe UI Emoji';
 }
 
+html.dark {
+  /* Slightly brighter brand in dark mode for contrast. */
+  --vp-c-brand-1: #818cf8;
+  --vp-c-brand-2: #6366f1;
+  --vp-c-brand-3: #4f46e5;
+}
+
 /* Tables are the whole point of token docs. */
 .vp-doc table {
   display: block;
