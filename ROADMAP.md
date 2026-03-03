@@ -42,6 +42,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: add namespace filter chips + ns:... search hint
 - docs-site: fix tokens index fetch under GitHub Pages base path + add robust dist verification script
 - docs-site: add token detail page + deep links from token tables
+- docs: polish tokens.md markdown output (grouped sections + index)
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
@@ -49,11 +50,11 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 3. **Docs site**: auto-generate namespace pages from tokens.index.json.
 4. **Release**: improve helper (preflight checks + dry-run + clearer output).
 5. **Docs site**: add a CI job that builds Pages output on PRs.
-6. **Docs**: polish tokens.md output (group sections + anchors).
-7. **CI**: add docs-site build + base-path verification to the main CI workflow.
-8. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
-9. **Tailwind**: add v3 mode golden tests for themeFile split output.
-10. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-11. **Figma pull**: persist cache snapshots to disk to enable true no-fetch runs.
-12. **CLI**: validate should return non-zero when warnings exist (or provide a flag), plus a summary line.
-13. **Plugins**: surface plugin load/hook errors with module + hook context (non-stack output in non-debug mode).
+6. **CI**: add docs-site build + base-path verification to the main CI workflow.
+7. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+8. **Tailwind**: add v3 mode golden tests for themeFile split output.
+9. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+10. **Figma pull**: persist cache snapshots to disk to enable true no-fetch runs.
+11. **CLI**: validate should return non-zero when warnings exist (or provide a flag), plus a summary line.
+12. **Plugins**: surface plugin load/hook errors with module + hook context (non-stack output in non-debug mode).
+13. **Docs**: clarify Tailwind v3 preset usage + config wiring in docs-site.
