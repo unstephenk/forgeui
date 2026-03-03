@@ -19,6 +19,6 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 5. **Tailwind v3 compatibility**: optional output mode for legacy projects.
 6. **Docs site**: simple VitePress/Docusaurus site consuming `tokens.index.json`.
 7. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
-8. **Release hardening**: add `npm publish --dry-run` in CI for tags; tighten `files`/exports.
-9. **Docs polish**: expand Troubleshooting + add "Recipes" (dark mode, multi-brand, token naming).
-10. **Tailwind preset split**: optional `themeFile` output with clean preset import + golden coverage.
+8. **Release hardening**: tighten `files`/exports; ensure dist is built before publish.
+9. **Docs site**: simple VitePress/Docusaurus site consuming `tokens.index.json`.
+10. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.

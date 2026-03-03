@@ -40,6 +40,8 @@ See `docs/SPEC.md`.
 
 Getting started: see `docs/GETTING_STARTED.md`.
 
+Recipes: see `docs/RECIPES.md`.
+
 Roadmap: see `ROADMAP.md`.
 
 ## Next up (features / improvements)

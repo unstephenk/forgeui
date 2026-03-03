@@ -31,4 +31,21 @@ describe("golden fixtures", () => {
     expect(normalizeNewlines(css)).toBe(normalizeNewlines(cssExpected));
     expect(normalizeNewlines(preset)).toBe(normalizeNewlines(presetExpected));
   });
+
+  it("generates split preset + theme fragment deterministically", () => {
+    const doc = readJson(path.join(FIXTURES, "tokens.themesets.json")) as TokensStudioDoc;
+    const cfg = defaultConfig();
+    cfg.tailwind.themeFile = "forgeui.theme.ts";
+
+    const gen = generateTailwindPreset(doc, cfg);
+    const preset = gen.preset;
+    const theme = gen.themeFragment;
+
+    const presetExpected = fs.readFileSync(path.join(GOLDEN, "forgeui.preset.split.ts"), "utf8");
+    const themeExpected = fs.readFileSync(path.join(GOLDEN, "forgeui.theme.ts"), "utf8");
+
+    expect(theme).toBeTruthy();
+    expect(normalizeNewlines(preset)).toBe(normalizeNewlines(presetExpected));
+    expect(normalizeNewlines(theme!)).toBe(normalizeNewlines(themeExpected));
+  });
 });
