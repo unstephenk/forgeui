@@ -23,15 +23,16 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Token normalization: dimensions unit normalization + optional px/rem conversion
 - docs-site: token table permalinks + linkable anchors
 - Config DX: unwrap more config export shapes (default, nested default, factory)
+- docs-site: per-theme column toggles (URL-driven)
 
 ## Next (keep >= 10)
-1. **Docs site**: add per-theme column toggles.
-2. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
-3. **Docs site**: render token "type" badges and sortable columns.
-4. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
-5. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
-6. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
-7. **Plugins**: document plugin authoring + provide an example plugin.
-8. **CLI**: add `--debug` to print stacks for errors.
-9. **Validate**: detect tokens with missing `$value` and emit a warning.
-10. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
+1. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
+2. **Docs site**: render token "type" badges and sortable columns.
+3. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
+4. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
+5. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
+6. **Plugins**: document plugin authoring + provide an example plugin.
+7. **CLI**: add `--debug` to print stacks for errors.
+8. **Validate**: detect tokens with missing `$value` and emit a warning.
+9. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
+10. **Tailwind**: add Tailwind v3 preset output golden tests.
