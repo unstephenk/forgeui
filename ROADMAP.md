@@ -47,6 +47,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - plugins: config schema supports name/enabled + better load/hook error context
 - figma pull: persist cached snapshots to disk + materialize output on 304 when missing
 - validate: exit non-zero when warnings exist + print a summary line
+- release: helper now does preflight + build + pack smoke + annotated tag + push (with --dry-run/--no-push)
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
@@ -61,4 +62,4 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 10. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
 11. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
 12. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
-13. **Release**: helper should create + push git tag, and print post-release next steps.
+13. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.

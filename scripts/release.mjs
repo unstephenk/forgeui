@@ -17,7 +17,10 @@ function die(msg) {
 }
 
 const args = process.argv.slice(2);
-const push = args.includes('--push');
+const dryRun = args.includes('--dry-run');
+const noPush = args.includes('--no-push');
+// Default: push, because that's the whole point of a release helper.
+const push = args.includes('--push') || !noPush;
 
 const branch = sh('git rev-parse --abbrev-ref HEAD');
 if (branch !== 'main') {
@@ -35,17 +38,37 @@ if (!version) die('Could not read package.json version');
 
 const tag = `v${version}`;
 
-// ensure tag does not already exist
+// ensure tag does not already exist (including remote tags)
+run('git fetch --tags --quiet');
 const existing = sh(`git tag -l ${tag}`);
 if (existing) {
   die(`Tag already exists: ${tag} (did you already release this version?)`);
 }
 
+console.log(`[forgeui release] Preflight…`);
+
 console.log(`[forgeui release] Running tests…`);
 run('npm test');
 
-console.log(`[forgeui release] Creating tag ${tag}…`);
-run(`git tag ${tag}`);
+console.log(`[forgeui release] Build…`);
+run('npm run build');
+
+console.log(`[forgeui release] NPM pack smoke…`);
+const tgz = sh('npm pack --silent');
+try {
+  fs.unlinkSync(tgz);
+} catch {
+  // ignore
+}
+
+if (dryRun) {
+  console.log(`[forgeui release] DRY RUN: would create annotated tag ${tag}`);
+  console.log(`[forgeui release] DRY RUN: would push main + ${tag}`);
+  process.exit(0);
+}
+
+console.log(`[forgeui release] Creating annotated tag ${tag}…`);
+run(`git tag -a ${tag} -m ${JSON.stringify(tag)}`);
 
 console.log(`[forgeui release] Done. Pushing the tag triggers the GitHub Actions release workflow.`);
 
@@ -54,7 +77,7 @@ if (push) {
   run('git push origin main');
   run(`git push origin ${tag}`);
 } else {
+  console.log('[forgeui release] Tag created but not pushed (per --no-push).');
   console.log('  git push origin main');
   console.log(`  git push origin ${tag}`);
-  console.log('Tip: re-run with --push to do this automatically.');
 }
