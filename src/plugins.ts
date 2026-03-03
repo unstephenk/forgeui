@@ -3,6 +3,7 @@ import jitiFactory from "jiti";
 
 import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
 import { validatePluginOptions } from "./plugins_schema.js";
+import { createBuiltinPlugin, isBuiltinPluginName } from "./builtin_plugins/index.js";
 
 export type ForgeUIPluginContext = {
   cfg: ForgeUIConfig;
@@ -53,17 +54,23 @@ export async function loadPlugins(cfg: ForgeUIConfig): Promise<ForgeUIPlugin[]> 
     if (def.enabled === false) continue;
 
     const modPath = def.module;
-    const abs = modPath.startsWith(".") ? path.resolve(process.cwd(), modPath) : modPath;
 
-    let loaded: any;
-    try {
-      loaded = jiti(abs);
-    } catch (e: any) {
-      const msg = e instanceof Error ? e.message : String(e);
-      throw new Error(`Failed to load plugin ${def.name ? `${def.name} ` : ""}from ${modPath}. ${msg}`);
+    let plugin: ForgeUIPlugin;
+    if (isBuiltinPluginName(modPath)) {
+      plugin = createBuiltinPlugin(modPath);
+    } else {
+      const abs = modPath.startsWith(".") ? path.resolve(process.cwd(), modPath) : modPath;
+
+      let loaded: any;
+      try {
+        loaded = jiti(abs);
+      } catch (e: any) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new Error(`Failed to load plugin ${def.name ? `${def.name} ` : ""}from ${modPath}. ${msg}`);
+      }
+
+      plugin = (loaded?.default ?? loaded) as any;
     }
-
-    const plugin: ForgeUIPlugin = (loaded?.default ?? loaded) as any;
     if (!plugin || typeof plugin !== "object") {
       throw new Error(`Invalid plugin module: ${modPath} (expected an object export)`);
     }

@@ -37,6 +37,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: dark mode variables + enable appearance toggle
 - figma pull: add ETag caching (If-None-Match + 304 unchanged)
 - plugins: add hook coverage tests + example plugin that mutates outputs
+- Plugins: builtin plugin registry (short names like `banner`, no module paths)
 - figma pull: retry 429 rate limits (Retry-After)
 - validate: warn on token-like objects missing $type/$value (paths)
 - docs-site: add namespace filter chips + ns:... search hint
@@ -52,15 +53,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Plugins**: add a builtin plugin registry (short names, no module paths).
-2. **Docs site**: add a "copy JSON" button for token detail.
-3. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
-4. **Docs site**: token table keyboard navigation (j/k, enter to open).
-5. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
-6. **Plugins**: add a builtin plugin registry (short names, no module paths).
-7. **Docs site**: add a "copy JSON" button for token detail.
-8. **CLI**: add `forgeui check` to run validate+diff+schema in one command.
-9. **Figma pull**: support writing multiple outputs (raw snapshot + extracted tokens).
-10. **Docs**: add a clear "Supported token types" page.
-11. **Tokens**: support `typography` token → Tailwind fontSize tuple output.
-12. **DX**: add `forgeui doctor` to print environment + config summary.
+1. **Docs site**: add a "copy JSON" button for token detail.
+2. **CLI**: add `forgeui check` to run validate+diff+schema in one command.
+3. **Figma pull**: support writing multiple outputs (raw snapshot + extracted tokens).
+4. **Docs**: add a clear "Supported token types" page.
+5. **Tokens**: support `typography` token → Tailwind fontSize tuple output.
+6. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+7. **Docs site**: token table keyboard navigation (j/k, enter to open).
+8. **DX**: add `forgeui doctor` to print environment + config summary.
+9. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
+10. **Docs site**: add a "copy path" button for token detail.
+11. **Docs site**: add link/button from token detail → "view in table".
+12. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).

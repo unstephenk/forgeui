@@ -52,6 +52,25 @@ describe("plugins", () => {
     expect(calls).toEqual(["p1", "p2"]);
   });
 
+  it("loads builtin plugins by short name", async () => {
+    const cfg: ForgeUIConfig = {
+      tokensPath: "./tokens.json",
+      outDir: "./forgeui",
+      plugins: [{ module: "banner", options: { banner: "hi", file: "tokens.css" } }],
+      themes: { rootTheme: "Light" },
+      css: {},
+      tailwind: { cssFile: "tokens.css", presetFile: "forgeui.preset.ts", darkThemeName: "Dark" },
+    };
+
+    const plugins = await loadPlugins(cfg);
+    expect(plugins).toHaveLength(1);
+    expect(plugins[0].__forgeui?.module).toBe("banner");
+
+    const ctx: any = { cfg, doc: { $themes: [] }, outputs: { "tokens.css": "hello" } };
+    await runHook(plugins, "afterGenerate", ctx);
+    expect(ctx.outputs["tokens.css"]).toBe("/* hi */\nhello");
+  });
+
   it("skips plugins with enabled=false", async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "forgeui-plugin-"));
     const prev = process.cwd();
