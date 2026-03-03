@@ -30,4 +30,29 @@ describe("validateTokensDoc", () => {
     const res = validateTokensDoc(doc, defaultConfig());
     expect(res.warnings.some((w) => w.code === "MISSING_TOKEN_VALUE" && w.token === "core.color.brand")).toBe(true);
   });
+
+  it("warns when a token-like object has $value but is missing $type (path included)", () => {
+    const doc: TokensStudioDoc = {
+      $themes: [
+        {
+          id: "t1",
+          name: "Light",
+          selectedTokenSets: {
+            core: "enabled"
+          }
+        }
+      ],
+      // @ts-expect-error - fixture intentionally malformed
+      core: {
+        color: {
+          oops: {
+            $value: "#fff"
+          }
+        }
+      }
+    };
+
+    const res = validateTokensDoc(doc, defaultConfig());
+    expect(res.warnings.some((w) => w.code === "MISSING_TOKEN_TYPE" && w.token === "core.color.oops")).toBe(true);
+  });
 });

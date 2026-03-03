@@ -43,6 +43,15 @@ function scanMissingTokenValues(setObj: unknown, prefix: string[], warnings: For
       });
     }
 
+    // If it has $value but no $type, it won't be treated as a token leaf and will be silently skipped.
+    if (isObject(v) && "$value" in v && !("$type" in v)) {
+      warnings.push({
+        code: "MISSING_TOKEN_TYPE",
+        message: `Token '${next.join(".")}' is missing $type (will be ignored).`,
+        token: next.join(".")
+      });
+    }
+
     if (isObject(v)) scanMissingTokenValues(v, next, warnings);
   }
 }
