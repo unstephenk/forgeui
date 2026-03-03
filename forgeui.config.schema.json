@@ -84,6 +84,21 @@
       "properties": {
         "alsoEmitClassDark": {
           "type": "boolean"
+        },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "unit": {
+              "enum": ["preserve", "px", "rem"]
+            },
+            "remBasePx": {
+              "type": "number"
+            },
+            "precision": {
+              "type": "number"
+            }
+          }
         }
       }
     },

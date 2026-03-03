@@ -121,16 +121,76 @@ function hslToRgbTriplet(input: string): string | null {
   return `${r} ${g} ${b}`;
 }
 
-function normalizeDimension(resolved: unknown): string {
-  if (typeof resolved === "number") return `${resolved}px`;
+type DimensionUnit = "preserve" | "px" | "rem";
+
+type NormalizeDimensionOptions = {
+  unit: DimensionUnit;
+  remBasePx: number;
+  precision: number;
+};
+
+function formatNumber(n: number, precision: number): string {
+  // clamp precision and strip trailing zeros
+  const p = Math.max(0, Math.min(10, Math.floor(precision)));
+  const s = n.toFixed(p);
+  return s.replace(/(?:\.0+|(?<=\d)0+)$/, "").replace(/\.$/, "");
+}
+
+function normalizeDimension(resolved: unknown, opts: NormalizeDimensionOptions): string {
+  const { unit, remBasePx, precision } = opts;
+
+  // Pass through common CSS expressions without touching them.
+  if (typeof resolved === "string") {
+    const raw = resolved.trim();
+    if (/^(calc|clamp|min|max)\(/i.test(raw)) return raw;
+    if (/^var\(/i.test(raw)) return raw;
+  }
+
+  // Number => px by default, then convert as requested.
+  if (typeof resolved === "number") {
+    if (!Number.isFinite(resolved)) return String(resolved);
+    if (unit === "rem") return `${formatNumber(resolved / remBasePx, precision)}rem`;
+    return `${formatNumber(resolved, precision)}px`;
+  }
+
   if (typeof resolved === "string") {
     const s = resolved.trim();
-    // numeric string -> px
-    if (/^-?\d+(?:\.\d+)?$/.test(s)) return `${s}px`;
-    // already has a unit (px/rem/em/%) -> keep
-    if (/^-?\d+(?:\.\d+)?(px|rem|em|%|vh|vw)$/.test(s)) return s;
-    return resolved;
+
+    // numeric string => px (then convert)
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) {
+      const n = Number(s);
+      if (!Number.isFinite(n)) return s;
+      if (unit === "rem") return `${formatNumber(n / remBasePx, precision)}rem`;
+      return `${formatNumber(n, precision)}px`;
+    }
+
+    // "16px" / "1 rem" / "16PX" / "0" etc
+    const m = s.match(/^(-?\d+(?:\.\d+)?)(?:\s*)(px|rem|em|%|vh|vw)?$/i);
+    if (!m) return s;
+
+    const n = Number(m[1]);
+    if (!Number.isFinite(n)) return s;
+
+    const u = (m[2] ?? "px").toLowerCase();
+
+    if (unit === "preserve") {
+      return `${formatNumber(n, precision)}${u}`;
+    }
+
+    if (unit === "px") {
+      if (u === "rem") return `${formatNumber(n * remBasePx, precision)}px`;
+      // For unknown/other units, preserve.
+      if (u !== "px") return `${formatNumber(n, precision)}${u}`;
+      return `${formatNumber(n, precision)}px`;
+    }
+
+    // unit === "rem"
+    if (u === "px") return `${formatNumber(n / remBasePx, precision)}rem`;
+    if (u === "rem") return `${formatNumber(n, precision)}rem`;
+    // Other units: preserve.
+    return `${formatNumber(n, precision)}${u}`;
   }
+
   return String(resolved);
 }
 
@@ -162,6 +222,12 @@ function shadowToCssValue(resolved: unknown): string {
 export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): string {
   const themes = getThemes(doc);
 
+  const dimOpts: NormalizeDimensionOptions = {
+    unit: cfg.css?.dimensions?.unit ?? "preserve",
+    remBasePx: cfg.css?.dimensions?.remBasePx ?? 16,
+    precision: cfg.css?.dimensions?.precision ?? 4
+  };
+
   const include = cfg.filter?.include?.length ? picomatch(cfg.filter.include) : null;
   const exclude = cfg.filter?.exclude?.length ? picomatch(cfg.filter.exclude) : null;
 
@@ -192,7 +258,7 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
         } else if (t.leaf.$type === "shadow") {
           lines.push(`  ${varName}: ${shadowToCssValue(resolved)};`);
         } else if (t.leaf.$type === "dimension") {
-          lines.push(`  ${varName}: ${normalizeDimension(resolved)};`);
+          lines.push(`  ${varName}: ${normalizeDimension(resolved, dimOpts)};`);
         } else {
           lines.push(`  ${varName}: ${String(resolved)};`);
         }
@@ -270,6 +336,12 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const include = cfg.filter?.include?.length ? picomatch(cfg.filter.include) : null;
   const exclude = cfg.filter?.exclude?.length ? picomatch(cfg.filter.exclude) : null;
 
+  const dimOpts: NormalizeDimensionOptions = {
+    unit: cfg.css?.dimensions?.unit ?? "preserve",
+    remBasePx: cfg.css?.dimensions?.remBasePx ?? 16,
+    precision: cfg.css?.dimensions?.precision ?? 4
+  };
+
   const colors: any = {};
   const spacing: any = {};
   const borderRadius: any = {};
@@ -305,7 +377,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         const sKey = tokenPathToTailwindKey(t.path, "space");
         if (sKey.length) {
           const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
-          setNested(spacing, sKey, normalizeDimension(resolved));
+          setNested(spacing, sKey, normalizeDimension(resolved, dimOpts));
           continue;
         }
 
@@ -313,7 +385,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         const rKey = tokenPathToTailwindKey(t.path, "radius");
         if (rKey.length) {
           const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
-          setNested(borderRadius, rKey, normalizeDimension(resolved));
+          setNested(borderRadius, rKey, normalizeDimension(resolved, dimOpts));
           continue;
         }
       }

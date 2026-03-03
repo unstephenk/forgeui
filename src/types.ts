@@ -52,6 +52,16 @@ export type ForgeUIConfig = {
   css: {
     // if true, also write a `.dark` selector block mirroring the dark theme selector
     alsoEmitClassDark?: boolean;
+
+    // Dimension normalization controls how numeric/dimension tokens are emitted.
+    // - preserve: keep author units when present; assume `px` for bare numbers.
+    // - px: convert `rem` to `px` (using remBasePx)
+    // - rem: convert `px` (and bare numbers) to `rem` (using remBasePx)
+    dimensions?: {
+      unit?: "preserve" | "px" | "rem";
+      remBasePx?: number; // default: 16
+      precision?: number; // default: 4
+    };
   };
   tailwind: {
     cssFile: string;

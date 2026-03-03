@@ -20,10 +20,11 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Plugin system (v1): config + hooks interface scaffolding
 - CLI polish: better errors + exit codes + `--json` stability
 - Type/runtime guards: expand guards + validation messages
+- Token normalization: dimensions unit normalization + optional px/rem conversion
 
 ## Next (keep >= 10)
-1. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
-2. **Docs site**: generated token docs linkable anchors + permalinks.
+1. **Docs site**: generated token docs linkable anchors + permalinks.
+2. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
 3. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
 4. **Docs site**: add per-theme column toggles.
 5. **Docs site**: show per-token “path” breadcrumbs + namespace badges.

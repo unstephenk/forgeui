@@ -33,7 +33,12 @@ export function defaultConfig(): ForgeUIConfig {
       types: []
     },
     css: {
-      alsoEmitClassDark: false
+      alsoEmitClassDark: false,
+      dimensions: {
+        unit: "preserve",
+        remBasePx: 16,
+        precision: 4
+      }
     },
     tailwind: {
       cssFile: "tokens.css",
