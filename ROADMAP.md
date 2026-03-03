@@ -29,15 +29,16 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs: publish troubleshooting page in docs-site
 - docs: document Tailwind v3 wiring (CJS preset + classic config)
 - figma pull: support FIGMA_FILE_KEY + FIGMA_NODE_ID mode (Figma REST)
+- plugins: docs + example plugin (banner)
 
 ## Next (keep >= 10)
-1. **Plugins**: document plugin authoring + provide an example plugin.
-2. **CLI**: add `--debug` to print stacks for errors.
-3. **Validate**: detect tokens with missing `$value` and emit a warning.
-4. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
-5. **Tailwind**: add Tailwind v3 preset output golden tests.
-6. **Validation**: schema-check config at runtime (helpful errors).
-7. **Docs site**: add proper dark mode + theme switcher polish.
-8. **Figma pull**: add pagination/caching (ETag) for large files.
-9. **Docs**: document token normalization options (px/rem conversion).
-10. **Plugins**: add a "prettier" example plugin + docs on option validation.
+1. **CLI**: add `--debug` to print stacks for errors.
+2. **Validate**: detect tokens with missing `$value` and emit a warning.
+3. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
+4. **Tailwind**: add Tailwind v3 preset output golden tests.
+5. **Validation**: schema-check config at runtime (helpful errors).
+6. **Docs site**: add proper dark mode + theme switcher polish.
+7. **Figma pull**: add pagination/caching (ETag) for large files.
+8. **Docs**: document token normalization options (px/rem conversion).
+9. **Plugins**: add a "prettier" example plugin + docs on option validation.
+10. **Docs site**: auto-generate namespace pages from tokens.index.json.

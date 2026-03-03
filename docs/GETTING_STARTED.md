@@ -117,5 +117,8 @@ npx forgeui sync --dry-run --json
 npx forgeui diff
 ```
 
+## Plugins
+See `docs/PLUGINS.md`.
+
 ## Troubleshooting
 See `docs/TROUBLESHOOTING.md`.
