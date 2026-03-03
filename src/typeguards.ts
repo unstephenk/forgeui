@@ -8,7 +8,8 @@ const TOKEN_TYPES: TokenType[] = [
   "fontFamily",
   "fontSize",
   "lineHeight",
-  "fontWeight"
+  "fontWeight",
+  "typography"
 ];
 
 export function isTokenType(v: unknown): v is TokenType {
@@ -17,4 +18,9 @@ export function isTokenType(v: unknown): v is TokenType {
 
 export function isTokenLeaf(v: unknown): v is TokenLeaf {
   return isObject(v) && isTokenType((v as any).$type) && ("$value" in (v as any));
+}
+
+export function isThemeValueMap(v: unknown, themeNames: string[]): v is Record<string, unknown> {
+  if (!isObject(v)) return false;
+  return themeNames.some((t) => t in v);
 }

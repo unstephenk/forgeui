@@ -1,6 +1,7 @@
 import type { ForgeUIConfig, Theme, TokenLeaf, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, getTokenLeafAtPath, listEnabledSetsForTheme } from "./tokens.js";
 import { isObject, unwrapRef } from "./utils.js";
+import { isThemeValueMap, isTokenType } from "./typeguards.js";
 
 export type ForgeUIWarning = {
   code: string;
@@ -8,6 +9,24 @@ export type ForgeUIWarning = {
   token?: string;
   theme?: string;
 };
+
+function scanUnknownTokenTypes(setObj: unknown, prefix: string[], warnings: ForgeUIWarning[]) {
+  if (!isObject(setObj)) return;
+  for (const [k, v] of Object.entries(setObj)) {
+    const next = [...prefix, k];
+    if (isObject(v) && "$type" in v && "$value" in v) {
+      const t = (v as any).$type;
+      if (!isTokenType(t)) {
+        warnings.push({
+          code: "UNSUPPORTED_TOKEN_TYPE",
+          message: `Token '${next.join(".")}' has unsupported $type '${String(t)}' (will be ignored).`,
+          token: next.join(".")
+        });
+      }
+    }
+    if (isObject(v)) scanUnknownTokenTypes(v, next, warnings);
+  }
+}
 
 export function validateTokensDoc(doc: TokensStudioDoc, cfg?: ForgeUIConfig): { themes: Theme[]; warnings: ForgeUIWarning[] } {
   const warnings: ForgeUIWarning[] = [];
@@ -37,27 +56,24 @@ export function validateTokensDoc(doc: TokensStudioDoc, cfg?: ForgeUIConfig): { 
     const enabled = listEnabledSetsForTheme(theme);
     for (const setName of enabled) {
       const setObj = (doc as any)[setName];
+      scanUnknownTokenTypes(setObj, [setName], warnings);
       const flat = flattenSetTokens(setObj, [setName]);
       for (const t of flat) {
         const leaf: TokenLeaf = t.leaf;
         const v = leaf.$value;
 
         // Theme maps: ensure theme key exists when object-like
-        if (isObject(v)) {
-          // If it looks like a theme map (contains any theme name), warn if missing this theme
-          const looksLikeThemeMap = themes.some((th) => th.name in v);
-          if (looksLikeThemeMap && !(theme.name in v)) {
-            const fb = cfg?.themes.fallbacks?.[theme.name] ?? [];
-            const hasFallback = fb.some((tname) => tname in v) || (cfg?.themes.rootTheme && cfg.themes.rootTheme in v);
-            warnings.push({
-              code: "MISSING_THEME_VALUE",
-              message: hasFallback
-                ? `Token '${t.fqName}' is a theme map missing '${theme.name}' (will fall back).`
-                : `Token '${t.fqName}' is a theme map but has no value for theme '${theme.name}'.`,
-              token: t.fqName,
-              theme: theme.name
-            });
-          }
+        if (isThemeValueMap(v, themes.map((th) => th.name)) && !(theme.name in (v as any))) {
+          const fb = cfg?.themes.fallbacks?.[theme.name] ?? [];
+          const hasFallback = fb.some((tname) => tname in (v as any)) || (cfg?.themes.rootTheme && cfg.themes.rootTheme in (v as any));
+          warnings.push({
+            code: "MISSING_THEME_VALUE",
+            message: hasFallback
+              ? `Token '${t.fqName}' is a theme map missing '${theme.name}' (will fall back).`
+              : `Token '${t.fqName}' is a theme map but has no value for theme '${theme.name}'.`,
+            token: t.fqName,
+            theme: theme.name
+          });
         }
 
         // Refs: check they point to something
