@@ -287,15 +287,19 @@ cli
   });
 
 cli
-  .command("figma pull", "Fetch tokens JSON (stub) and write to your tokensPath")
+  .command("figma pull", "Fetch tokens JSON and write to your tokensPath")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--out <file>", "Override output file (defaults to config tokensPath)")
-  .action(async (opts: { config?: string; out?: string }) => {
+  .option("--url <url>", "Override FIGMA_TOKENS_URL")
+  .option("--fileKey <key>", "Figma file key (alternate mode; uses Figma REST API)")
+  .option("--nodeId <id>", "Figma node id (alternate mode; uses Figma REST API)")
+  .option("--token <token>", "Override FIGMA_TOKEN")
+  .action(async (opts: { config?: string; out?: string; url?: string; fileKey?: string; nodeId?: string; token?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     const outFile = opts.out ?? cfg.tokensPath;
-    await figmaPull({ outFile });
+    await figmaPull({ outFile, url: opts.url, fileKey: opts.fileKey, nodeId: opts.nodeId, token: opts.token });
 
     if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [outFile] }, null, 2) + "\n");
     else log(`Wrote ${outFile}`);

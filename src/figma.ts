@@ -3,37 +3,138 @@ import path from "node:path";
 
 import { ensureDir } from "./utils.js";
 
-export async function figmaPull(params: { outFile: string; url?: string; token?: string }): Promise<void> {
+type FigmaPullParams = {
+  outFile: string;
+  // Mode 1: direct URL to exported tokens JSON
+  url?: string;
+  // Mode 2: fetch a specific node and extract tokens from plugin data
+  fileKey?: string;
+  nodeId?: string;
+  token?: string;
+};
+
+function tryParseJson(input: unknown): any | null {
+  if (typeof input !== "string") return null;
+  const s = input.trim();
+  if (!s) return null;
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
+function extractTokensStudioFromNodePayload(node: any): any | null {
+  const doc = node?.document;
+  if (!doc) return null;
+
+  // Tokens Studio has historically used shared plugin data.
+  const spd = doc.sharedPluginData ?? doc.sharedPluginMetadata ?? doc.pluginData ?? {};
+  if (typeof spd !== "object" || spd == null) return null;
+
+  const candidates = ["tokens-studio", "tokens", "tokensStudio", "token-studio"];
+  for (const key of candidates) {
+    const bucket = (spd as any)[key];
+    if (!bucket) continue;
+
+    // Try common field names.
+    const direct = (bucket as any).tokens ?? (bucket as any).data ?? bucket;
+    const parsed = tryParseJson(direct);
+    if (parsed) return parsed;
+    if (typeof direct === "object") return direct;
+  }
+
+  // Last resort: scan all buckets for something that looks like a TS export.
+  for (const [k, bucket] of Object.entries(spd as any)) {
+    const direct = (bucket as any)?.tokens ?? (bucket as any)?.data ?? bucket;
+    const parsed = tryParseJson(direct);
+    if (parsed && (parsed.$themes || parsed.$sets)) return parsed;
+    if (direct && typeof direct === "object" && ((direct as any).$themes || (direct as any).$sets)) return direct;
+  }
+
+  return null;
+}
+
+export async function figmaPull(params: FigmaPullParams): Promise<void> {
   const url = params.url ?? process.env.FIGMA_TOKENS_URL;
   const token = params.token ?? process.env.FIGMA_TOKEN;
+  const fileKey = params.fileKey ?? process.env.FIGMA_FILE_KEY;
+  const nodeId = params.nodeId ?? process.env.FIGMA_NODE_ID;
 
-  if (!url) {
+  let json: any;
+
+  if (url) {
+    const res = await fetch(url, {
+      headers: {
+        ...(token ? { "X-Figma-Token": token } : {})
+      }
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Failed to fetch tokens (HTTP ${res.status}). ${body ? `Body: ${body.slice(0, 200)}` : ""}`);
+    }
+
+    json = await res.json();
+  } else if (fileKey && nodeId) {
+    if (!token) {
+      throw new Error(
+        [
+          "Missing FIGMA_TOKEN.",
+          "\n\nWhen using FIGMA_FILE_KEY + FIGMA_NODE_ID mode, a Figma personal access token is required.",
+          "Set:",
+          "  export FIGMA_TOKEN=\"...\"",
+          "\nThen run:",
+          "  forgeui figma pull --fileKey ... --nodeId ..."
+        ].join("\n")
+      );
+    }
+
+    const apiUrl = `https://api.figma.com/v1/files/${encodeURIComponent(fileKey)}/nodes?ids=${encodeURIComponent(nodeId)}`;
+    const res = await fetch(apiUrl, {
+      headers: {
+        "X-Figma-Token": token
+      }
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Failed to fetch Figma node (HTTP ${res.status}). ${body ? `Body: ${body.slice(0, 200)}` : ""}`);
+    }
+
+    const payload = await res.json();
+    const node = payload?.nodes?.[nodeId];
+    const extracted = extractTokensStudioFromNodePayload(node);
+
+    if (!extracted) {
+      const keys = Object.keys(node?.document?.sharedPluginData ?? {}).join(", ");
+      throw new Error(
+        [
+          "Fetched the node, but could not find Tokens Studio data in plugin metadata.",
+          "Try exporting via FIGMA_TOKENS_URL instead, or confirm the node contains Tokens Studio plugin data.",
+          keys ? `Found sharedPluginData keys: ${keys}` : "No sharedPluginData keys found."
+        ].join("\n")
+      );
+    }
+
+    json = extracted;
+  } else {
     throw new Error(
       [
-        "Missing FIGMA_TOKENS_URL.",
-        "\n\nSet it to a URL that returns your Tokens Studio JSON export.",
-        "Example:",
+        "Missing figma pull inputs.",
+        "\nChoose ONE mode:",
+        "\nMode A (recommended):",
         "  export FIGMA_TOKENS_URL=\"https://example.com/tokens.json\"",
-        "\nOptional:",
-        "  export FIGMA_TOKEN=\"...\"  # sent as X-Figma-Token",
+        "\nMode B (Figma REST):",
+        "  export FIGMA_FILE_KEY=\"...\"",
+        "  export FIGMA_NODE_ID=\"...\"",
+        "  export FIGMA_TOKEN=\"...\"",
         "\nThen run:",
         `  forgeui figma pull --out ${params.outFile}`
       ].join("\n")
     );
   }
 
-  const res = await fetch(url, {
-    headers: {
-      ...(token ? { "X-Figma-Token": token } : {})
-    }
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch tokens (HTTP ${res.status}). ${body ? `Body: ${body.slice(0, 200)}` : ""}`);
-  }
-
-  const json = await res.json();
   const outAbs = path.resolve(process.cwd(), params.outFile);
   ensureDir(path.dirname(outAbs));
   fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");

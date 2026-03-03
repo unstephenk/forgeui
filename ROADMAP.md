@@ -28,15 +28,16 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: token type badges + sortable columns
 - docs: publish troubleshooting page in docs-site
 - docs: document Tailwind v3 wiring (CJS preset + classic config)
+- figma pull: support FIGMA_FILE_KEY + FIGMA_NODE_ID mode (Figma REST)
 
 ## Next (keep >= 10)
-1. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
-2. **Plugins**: document plugin authoring + provide an example plugin.
-3. **CLI**: add `--debug` to print stacks for errors.
-4. **Validate**: detect tokens with missing `$value` and emit a warning.
-5. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
-6. **Tailwind**: add Tailwind v3 preset output golden tests.
-7. **Validation**: schema-check config at runtime (helpful errors).
-8. **Docs site**: add proper dark mode + theme switcher polish.
-9. **Figma pull**: add pagination/caching (ETag) for large files.
-10. **Docs**: document token normalization options (px/rem conversion).
+1. **Plugins**: document plugin authoring + provide an example plugin.
+2. **CLI**: add `--debug` to print stacks for errors.
+3. **Validate**: detect tokens with missing `$value` and emit a warning.
+4. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
+5. **Tailwind**: add Tailwind v3 preset output golden tests.
+6. **Validation**: schema-check config at runtime (helpful errors).
+7. **Docs site**: add proper dark mode + theme switcher polish.
+8. **Figma pull**: add pagination/caching (ETag) for large files.
+9. **Docs**: document token normalization options (px/rem conversion).
+10. **Plugins**: add a "prettier" example plugin + docs on option validation.
