@@ -15,6 +15,7 @@ export function defaultConfig(): ForgeUIConfig {
   return {
     tokensPath: "./tokens.json",
     outDir: "./forgeui",
+    plugins: [],
     themes: {
       rootTheme: "Light",
       selectorByTheme: {

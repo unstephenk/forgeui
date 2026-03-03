@@ -28,6 +28,10 @@ export type TokenLeaf = {
 export type ForgeUIConfig = {
   tokensPath: string;
   outDir: string;
+  plugins?: {
+    module: string;
+    options?: Record<string, unknown>;
+  }[];
   themes: {
     rootTheme: string; // e.g. "Light"
     selectorByTheme?: Record<string, string | string[]>; // explicit overrides

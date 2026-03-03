@@ -7,6 +7,7 @@ import { cac } from "cac";
 
 import { DEFAULT_CONFIG_FILES, configTemplate, loadConfig, resolveConfigPath } from "./config.js";
 import { generateTailwindPreset, generateTokensCss, outPath } from "./generate.js";
+import { loadPlugins, runHook } from "./plugins.js";
 import { maybePrettifyTs } from "./prettier.js";
 import { makeLock, makeManifest } from "./lock.js";
 import type { TokensStudioDoc } from "./types.js";
@@ -89,10 +90,29 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
     throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
   }
 
-  const css = generateTokensCss(doc, cfg);
-  const gen = generateTailwindPreset(doc, cfg);
-  const preset = await maybePrettifyTs(gen.preset, cfg.format?.prettier);
-  const themeFragment = gen.themeFragment ? await maybePrettifyTs(gen.themeFragment, cfg.format?.prettier) : undefined;
+  const plugins = await loadPlugins(cfg);
+  await runHook(plugins, "beforeGenerate", { cfg, doc });
+
+  const cssRaw = generateTokensCss(doc, cfg);
+  const genRaw = generateTailwindPreset(doc, cfg);
+
+  const ctx = {
+    cfg,
+    doc,
+    outputs: {
+      css: cssRaw,
+      preset: genRaw.preset,
+      themeFragment: genRaw.themeFragment
+    }
+  };
+
+  await runHook(plugins, "afterGenerate", ctx);
+
+  const css = ctx.outputs?.css ?? cssRaw;
+  const preset = await maybePrettifyTs(ctx.outputs?.preset ?? genRaw.preset, cfg.format?.prettier);
+  const themeFragment = ctx.outputs?.themeFragment
+    ? await maybePrettifyTs(ctx.outputs.themeFragment, cfg.format?.prettier)
+    : undefined;
 
   const cssPath = outPath(cfg, cfg.tailwind.cssFile);
   const presetPath = outPath(cfg, cfg.tailwind.presetFile);
