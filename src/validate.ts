@@ -28,6 +28,25 @@ function scanUnknownTokenTypes(setObj: unknown, prefix: string[], warnings: Forg
   }
 }
 
+function scanMissingTokenValues(setObj: unknown, prefix: string[], warnings: ForgeUIWarning[]) {
+  if (!isObject(setObj)) return;
+  for (const [k, v] of Object.entries(setObj)) {
+    const next = [...prefix, k];
+
+    // Tokens Studio leaves should generally be {$type, $value}. If a leaf has $type but no $value,
+    // it's almost always an authoring error (or an incomplete export).
+    if (isObject(v) && "$type" in v && !("$value" in v)) {
+      warnings.push({
+        code: "MISSING_TOKEN_VALUE",
+        message: `Token '${next.join(".")}' is missing $value.`,
+        token: next.join(".")
+      });
+    }
+
+    if (isObject(v)) scanMissingTokenValues(v, next, warnings);
+  }
+}
+
 export function validateTokensDoc(doc: TokensStudioDoc, cfg?: ForgeUIConfig): { themes: Theme[]; warnings: ForgeUIWarning[] } {
   const warnings: ForgeUIWarning[] = [];
 
@@ -57,6 +76,7 @@ export function validateTokensDoc(doc: TokensStudioDoc, cfg?: ForgeUIConfig): { 
     for (const setName of enabled) {
       const setObj = (doc as any)[setName];
       scanUnknownTokenTypes(setObj, [setName], warnings);
+      scanMissingTokenValues(setObj, [setName], warnings);
       const flat = flattenSetTokens(setObj, [setName]);
       for (const t of flat) {
         const leaf: TokenLeaf = t.leaf;
