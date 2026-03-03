@@ -36,17 +36,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Validation: schema-check config at runtime (Ajv)
 - docs-site: dark mode variables + enable appearance toggle
 - figma pull: add ETag caching (If-None-Match + 304 unchanged)
+- plugins: add hook coverage tests + example plugin that mutates outputs
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
 2. **Plugins**: add a "prettier" example plugin + docs on option validation.
 3. **Docs site**: auto-generate namespace pages from tokens.index.json.
 4. **Docs site**: add namespace filters to search.
-5. **Plugins**: add hook coverage tests + example plugin that mutates outputs.
-6. **Figma pull**: handle 429 rate limits (Retry-After) gracefully.
-7. **Release**: improve helper (preflight checks + dry-run + clearer output).
-8. **Docs site**: add a CI job that builds Pages output on PRs.
-9. **Docs**: polish tokens.md output (group sections + anchors).
-10. **Validate**: unsupported leaf reporting w/ JSON paths.
-11. **CI**: add docs-site build + base-path verification to the main CI workflow.
-12. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+5. **Figma pull**: handle 429 rate limits (Retry-After) gracefully.
+6. **Release**: improve helper (preflight checks + dry-run + clearer output).
+7. **Docs site**: add a CI job that builds Pages output on PRs.
+8. **Docs**: polish tokens.md output (group sections + anchors).
+9. **Validate**: unsupported leaf reporting w/ JSON paths.
+10. **CI**: add docs-site build + base-path verification to the main CI workflow.
+11. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+12. **Docs site**: add Pages deploy verification test (base path + asset URLs).

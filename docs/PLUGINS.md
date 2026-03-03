@@ -61,6 +61,19 @@ const plugin: ForgeUIPlugin = {
 export default plugin;
 ```
 
+Example: mutate multiple outputs (CSS + preset) with options:
+
+```ts
+// see: examples/plugins/forgeui-plugin-rewrite.ts
+export default {
+  hooks: {
+    afterGenerate(ctx) {
+      // ctx.outputs.css / ctx.outputs.preset / ctx.outputs.themeFragment
+    }
+  }
+}
+```
+
 ## Gotchas
 - Keep plugins deterministic (no timestamps/random) if you want stable diffs.
 - Treat `ctx.doc` as read-only unless you *really* mean it.
