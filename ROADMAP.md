@@ -11,17 +11,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - golden tests
 - example React + Tailwind v4 app
 - docs-site: local search + basic theme polish
+- docs-site: token table UI (filter/search + grouping + copy-to-clipboard)
 
 ## Next (keep >= 10)
-1. **Docs site polish**: token table UI (filter/search + grouping by namespace + copy-to-clipboard).
-2. **Docs site**: token group pages (core vs components).
-3. **GitHub Pages**: base-path + deploy verification tweaks.
-4. **Release UX**: one-command release helper + docs.
-5. **Tailwind v3 compatibility**: optional preset output format (CJS + v3 usage).
-6. **Figma pull (v1)**: `forgeui figma pull` stub (env vars + clear errors).
-7. **Plugin system (v1)**: config + hooks interface scaffolding.
-8. **CLI polish**: better errors + exit codes + `--json` stability.
-9. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
-10. **Type/runtime guards**: expand guards + validation messages.
-11. **Docs site**: generated token docs linkable anchors + permalinks.
-12. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
+1. **Docs site**: token group pages (core vs components).
+2. **GitHub Pages**: base-path + deploy verification tweaks.
+3. **Release UX**: one-command release helper + docs.
+4. **Tailwind v3 compatibility**: optional preset output format (CJS + v3 usage).
+5. **Figma pull (v1)**: `forgeui figma pull` stub (env vars + clear errors).
+6. **Plugin system (v1)**: config + hooks interface scaffolding.
+7. **CLI polish**: better errors + exit codes + `--json` stability.
+8. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
+9. **Type/runtime guards**: expand guards + validation messages.
+10. **Docs site**: generated token docs linkable anchors + permalinks.
+11. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
+12. **Docs site**: add per-theme column toggles.
