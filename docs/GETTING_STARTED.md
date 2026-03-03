@@ -86,6 +86,31 @@ Default config supports both:
 - `class="dark"` (Tailwind classic)
 - `data-theme="dark"` selector
 
+## 6) Dimension normalization (px/rem)
+ForgeUI can normalize dimension tokens (spacing/radius/etc) into a consistent unit.
+
+In `forgeui.config.*`:
+
+```ts
+export default {
+  css: {
+    dimensions: {
+      // "preserve" | "px" | "rem"
+      unit: "rem",
+      // only used when unit="rem"
+      remBasePx: 16,
+      // rounding precision for rem conversion
+      precision: 4
+    }
+  }
+}
+```
+
+Notes:
+- `preserve` keeps whatever Tokens Studio exported (recommended if you already standardize units upstream).
+- `px` forces numeric strings like `"16"` to `"16px"`.
+- `rem` converts px-ish values to rem for Tailwind-friendly sizing.
+
 So you can toggle either:
 
 ```html

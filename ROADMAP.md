@@ -52,16 +52,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Docs**: document token normalization options (px/rem conversion).
-2. **Plugins**: add a "prettier" example plugin + docs on option validation.
-3. **Docs site**: auto-generate namespace pages from tokens.index.json.
-4. **Release**: improve helper (preflight checks + dry-run + clearer output).
-5. **Docs site**: add a CI job that builds Pages output on PRs.
-6. **CI**: add docs-site Pages build to PR checks only (skip on non-doc changes).
-7. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
-8. **Tailwind**: add v3 mode golden tests for themeFile split output.
-9. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-10. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
-11. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
-12. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
-13. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
+1. **Plugins**: add a "prettier" example plugin + docs on option validation.
+2. **Docs site**: auto-generate namespace pages from tokens.index.json.
+3. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+4. **Tailwind**: add v3 mode golden tests for themeFile split output.
+5. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+6. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
+7. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
+8. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
+9. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
+10. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+11. **Docs site**: token table keyboard navigation (j/k, enter to open).
+12. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
