@@ -51,6 +51,36 @@ In your app CSS (e.g. `src/index.css`):
 
 Adjust paths based on your project layout.
 
+## 4b) Tailwind v3 (classic config)
+If you’re on Tailwind v3, generate a **CommonJS** preset and use the classic `tailwind.config.*` wiring.
+
+In `forgeui.config.*`:
+
+```ts
+export default {
+  tailwind: {
+    presetFile: "forgeui.preset.cjs",
+    presetFormat: "cjs",
+    presetUsage: "v3"
+  }
+}
+```
+
+Then in `tailwind.config.cjs`:
+
+```js
+module.exports = {
+  presets: [require("./forgeui/forgeui.preset.cjs")],
+  content: ["./src/**/*.{js,ts,jsx,tsx,html}"],
+};
+```
+
+And make sure you’re importing the generated CSS variables somewhere global:
+
+```css
+@import "./forgeui/tokens.css";
+```
+
 ## 5) Dark mode
 Default config supports both:
 - `class="dark"` (Tailwind classic)

@@ -27,15 +27,16 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: token breadcrumbs + namespace badges in tables
 - docs-site: token type badges + sortable columns
 - docs: publish troubleshooting page in docs-site
+- docs: document Tailwind v3 wiring (CJS preset + classic config)
 
 ## Next (keep >= 10)
-1. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
-2. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
-3. **Plugins**: document plugin authoring + provide an example plugin.
-4. **CLI**: add `--debug` to print stacks for errors.
-5. **Validate**: detect tokens with missing `$value` and emit a warning.
-6. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
-7. **Tailwind**: add Tailwind v3 preset output golden tests.
-8. **Validation**: schema-check config at runtime (helpful errors).
-9. **Docs site**: add proper dark mode + theme switcher polish.
-10. **Figma pull**: add pagination/caching (ETag) for large files.
+1. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
+2. **Plugins**: document plugin authoring + provide an example plugin.
+3. **CLI**: add `--debug` to print stacks for errors.
+4. **Validate**: detect tokens with missing `$value` and emit a warning.
+5. **CI**: run tests on Ubuntu + Windows in GitHub Actions.
+6. **Tailwind**: add Tailwind v3 preset output golden tests.
+7. **Validation**: schema-check config at runtime (helpful errors).
+8. **Docs site**: add proper dark mode + theme switcher polish.
+9. **Figma pull**: add pagination/caching (ETag) for large files.
+10. **Docs**: document token normalization options (px/rem conversion).
