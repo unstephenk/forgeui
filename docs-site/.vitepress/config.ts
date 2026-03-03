@@ -9,10 +9,25 @@ export default defineConfig({
     },
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Tokens', link: '/tokens' },
+      {
+        text: 'Tokens',
+        items: [
+          { text: 'All tokens', link: '/tokens' },
+          { text: 'Core', link: '/tokens-core' },
+          { text: 'Components', link: '/tokens-components' },
+        ],
+      },
     ],
     sidebar: [
-      { text: 'Overview', items: [{ text: 'Home', link: '/' }, { text: 'Tokens', link: '/tokens' }] },
+      {
+        text: 'Overview',
+        items: [
+          { text: 'Home', link: '/' },
+          { text: 'All tokens', link: '/tokens' },
+          { text: 'Core tokens', link: '/tokens-core' },
+          { text: 'Component tokens', link: '/tokens-components' },
+        ],
+      },
     ],
   },
 })
