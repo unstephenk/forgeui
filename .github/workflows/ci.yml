@@ -19,8 +19,16 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install
         run: npm ci
+
+      - name: Audit (high+ only)
+        run: npm audit --audit-level=high
 
       - name: Build
         run: npm run build

@@ -123,6 +123,14 @@ function hslToRgbTriplet(input: string): string | null {
 
 function normalizeDimension(resolved: unknown): string {
   if (typeof resolved === "number") return `${resolved}px`;
+  if (typeof resolved === "string") {
+    const s = resolved.trim();
+    // numeric string -> px
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) return `${s}px`;
+    // already has a unit (px/rem/em/%) -> keep
+    if (/^-?\d+(?:\.\d+)?(px|rem|em|%|vh|vw)$/.test(s)) return s;
+    return resolved;
+  }
   return String(resolved);
 }
 
