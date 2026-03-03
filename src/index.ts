@@ -34,7 +34,8 @@ const argv = process.argv.slice(2);
 const GLOBAL = {
   quiet: argv.includes("--quiet"),
   json: argv.includes("--json"),
-  strict: argv.includes("--strict")
+  strict: argv.includes("--strict"),
+  debug: argv.includes("--debug")
 };
 
 function log(s: string) {
@@ -49,10 +50,13 @@ function fatal(e: unknown) {
   const err = e instanceof Error ? e : new Error(String(e));
 
   if (GLOBAL.json) {
-    process.stdout.write(JSON.stringify({ ok: false, error: { message: err.message } }, null, 2) + "\n");
+    process.stdout.write(
+      JSON.stringify({ ok: false, error: { message: err.message, ...(GLOBAL.debug ? { stack: err.stack } : {}) } }, null, 2) + "\n"
+    );
   } else {
     // Keep it readable; stacks are for debugging.
     console.error(`[forgeui] ${err.message}`);
+    if (GLOBAL.debug && err.stack) console.error(err.stack);
   }
 
   process.exitCode = 1;
@@ -65,6 +69,7 @@ const cli = cac("forgeui");
 cli.option("--quiet", "Suppress non-essential output");
 cli.option("--json", "Output machine-readable JSON (where supported)");
 cli.option("--strict", "Treat warnings as errors (non-zero exit)");
+cli.option("--debug", "Print stack traces for errors");
 cli.option("--outDir <dir>", "Override output directory (instead of config outDir)");
 
 cli
