@@ -116,27 +116,49 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   }
 
   const plugins = await loadPlugins(cfg);
-  await runHook(plugins, "beforeGenerate", { cfg, doc });
 
+  // Generate base outputs
   const cssRaw = generateTokensCss(doc, cfg);
   const genRaw = generateTailwindPreset(doc, cfg);
 
-  const ctx = {
-    cfg,
-    doc,
-    outputs: {
-      css: cssRaw,
-      preset: genRaw.preset,
-      themeFragment: genRaw.themeFragment
-    }
+  // Expose outputs by *filename* (what actually gets written)
+  const outputs: Record<string, string> = {
+    [cfg.tailwind.cssFile]: cssRaw,
+    [cfg.tailwind.presetFile]: genRaw.preset
+  };
+  if (cfg.tailwind.themeFile && genRaw.themeFragment) outputs[cfg.tailwind.themeFile] = genRaw.themeFragment;
+
+  const warn = (msg: string) => {
+    if (!GLOBAL.json) console.warn(`[forgeui plugin warning] ${msg}`);
   };
 
-  await runHook(plugins, "afterGenerate", ctx);
+  // Run hooks
+  await runHook(plugins, "beforeGenerate", {
+    cfg,
+    doc,
+    outputs,
+    warn,
+    pluginOptions: undefined
+  });
 
-  const css = ctx.outputs?.css ?? cssRaw;
-  const preset = await maybePrettifyTs(ctx.outputs?.preset ?? genRaw.preset, cfg.format?.prettier);
-  const themeFragment = ctx.outputs?.themeFragment
-    ? await maybePrettifyTs(ctx.outputs.themeFragment, cfg.format?.prettier)
+  for (const p of plugins) {
+    (p as any).pluginOptions = (p as any).options;
+  }
+
+  await runHook(plugins, "afterGenerate", {
+    cfg,
+    doc,
+    outputs,
+    warn,
+    pluginOptions: undefined
+  });
+
+  const css = outputs[cfg.tailwind.cssFile] ?? cssRaw;
+  const preset = await maybePrettifyTs(outputs[cfg.tailwind.presetFile] ?? genRaw.preset, cfg.format?.prettier);
+  const themeFragment = cfg.tailwind.themeFile
+    ? outputs[cfg.tailwind.themeFile]
+      ? await maybePrettifyTs(outputs[cfg.tailwind.themeFile], cfg.format?.prettier)
+      : undefined
     : undefined;
 
   const cssPath = outPath(cfg, cfg.tailwind.cssFile);

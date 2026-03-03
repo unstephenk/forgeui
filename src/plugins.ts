@@ -6,24 +6,28 @@ import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
 export type ForgeUIPluginContext = {
   cfg: ForgeUIConfig;
   doc: TokensStudioDoc;
-  outputs?: {
-    css?: string;
-    preset?: string;
-    themeFragment?: string;
-  };
+  // Outputs are keyed by the *output filename* in outDir.
+  // e.g. { "tokens.css": "...", "forgeui.preset.ts": "..." }
+  outputs: Record<string, string>;
+  warn?: (msg: string) => void;
+  pluginOptions?: Record<string, unknown>;
 };
 
-export type ForgeUIPlugin = {
+export type ForgeUIPlugin<TOptions extends Record<string, unknown> = Record<string, unknown>> = {
   name?: string;
   hooks?: {
     beforeGenerate?: (ctx: ForgeUIPluginContext) => void | Promise<void>;
     afterGenerate?: (ctx: ForgeUIPluginContext) => void | Promise<void>;
   };
+  // Optional: validate plugin options and throw a readable error.
+  validateOptions?: (options: TOptions) => void;
   // Internal metadata for better error messages.
   __forgeui?: {
     module: string;
     name: string;
   };
+  // Non-standard convenience: we attach config options here at load time.
+  options?: TOptions;
 };
 
 function pluginLabel(p: ForgeUIPlugin): string {
@@ -72,7 +76,18 @@ export async function loadPlugins(cfg: ForgeUIConfig): Promise<ForgeUIPlugin[]> 
     }
 
     // Attach options (non-standard but convenient for v1)
-    (plugin as any).options = def.options;
+    (plugin as any).options = def.options ?? {};
+
+    // Validate options if plugin provides a validator
+    if (typeof (plugin as any).validateOptions === "function") {
+      try {
+        (plugin as any).validateOptions((plugin as any).options);
+      } catch (e: any) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new Error(`Invalid options for plugin ${pluginLabel(plugin)}: ${msg}`);
+      }
+    }
+
     plugins.push(plugin);
   }
 
@@ -82,11 +97,17 @@ export async function loadPlugins(cfg: ForgeUIConfig): Promise<ForgeUIPlugin[]> 
 export async function runHook(
   plugins: ForgeUIPlugin[],
   hook: "beforeGenerate" | "afterGenerate",
-  ctx: ForgeUIPluginContext
+  baseCtx: ForgeUIPluginContext
 ): Promise<void> {
   for (const p of plugins) {
     const fn = p.hooks?.[hook];
     if (!fn) continue;
+
+    // per-plugin context includes pluginOptions
+    const ctx: ForgeUIPluginContext = {
+      ...baseCtx,
+      pluginOptions: (p as any).options ?? {}
+    };
 
     try {
       await fn(ctx);
