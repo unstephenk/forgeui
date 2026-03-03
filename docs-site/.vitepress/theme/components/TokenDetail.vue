@@ -10,6 +10,7 @@
         <span class="tok-badge">{{ ns }}</span>
         <h1 style="margin: 0; font-size: 20px;"><code>{{ entry.token }}</code></h1>
         <button class="tok-copy" @click="copy(entry.token)">Copy token</button>
+        <button class="tok-copy" @click="copyJson(entry)">Copy JSON</button>
       </div>
 
       <p class="tok-meta"><small>Type: <code>{{ entry.type }}</code></small></p>
@@ -65,6 +66,15 @@ const ns = computed(() => String(entry.value?.token ?? '').split('.')[0] || 'oth
 async function copy(text: any) {
   try {
     await navigator.clipboard.writeText(String(text))
+  } catch {
+    // ignore
+  }
+}
+
+async function copyJson(v: any) {
+  try {
+    // Stable + readable. (No need for a dependency here.)
+    await navigator.clipboard.writeText(JSON.stringify(v, null, 2))
   } catch {
     // ignore
   }
