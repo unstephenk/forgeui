@@ -19,11 +19,16 @@
   "files": [
     "dist",
     "docs",
-    "fixtures"
+    "fixtures",
+    "forgeui.config.schema.json",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "npx tsup src/index.ts src/api.ts --format esm --platform node --target node20 --dts",
+    "prepack": "npm run build",
     "test": "npx vitest run",
     "changeset": "changeset",
     "version-packages": "changeset version",
