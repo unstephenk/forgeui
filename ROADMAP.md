@@ -17,8 +17,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 3. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.
 4. **Plugin system (v1)**: allow custom generators via config + hooks.
 5. **Component scaffolding (v1)**: `forgeui scaffold <component>` for React + Tailwind.
-6. **Type coverage**: tighten token typing + runtime guards for token leaves.
-7. **Docs site polish**: search, grouping by namespace, theming.
-8. **Docs site polish**: token group pages (core vs components) and copy-to-clipboard.
-9. **Docs publishing**: GitHub Pages deploy for docs-site.
-10. **Release UX**: add a one-command release helper (optional) + docs.
+6. **Docs site polish**: search, grouping by namespace, theming.
+7. **Docs site polish**: token group pages (core vs components) and copy-to-clipboard.
+8. **Release UX**: add a one-command release helper (optional) + docs.
+9. **Figma pull (v1)**: optional command to fetch tokens via Figma API and sync.
+10. **Tailwind v3 compatibility**: optional output mode for legacy projects.

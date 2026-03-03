@@ -1,5 +1,6 @@
 import type { Theme, TokenLeaf, TokensStudioDoc } from "./types.js";
 import { isObject, unwrapRef } from "./utils.js";
+import { isTokenLeaf } from "./typeguards.js";
 
 export type FlatToken = {
   path: string[];
@@ -18,10 +19,6 @@ export function listEnabledSetsForTheme(theme: Theme): string[] {
     .filter(([, v]) => v === "enabled")
     .map(([k]) => k);
   return enabled;
-}
-
-function isTokenLeaf(v: unknown): v is TokenLeaf {
-  return isObject(v) && typeof v.$type === "string" && ("$value" in v);
 }
 
 export function flattenSetTokens(setObj: unknown, prefix: string[] = []): FlatToken[] {
