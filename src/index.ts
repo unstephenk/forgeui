@@ -43,6 +43,7 @@ const cli = cac("forgeui");
 cli.option("--quiet", "Suppress non-essential output");
 cli.option("--json", "Output machine-readable JSON (where supported)");
 cli.option("--strict", "Treat warnings as errors (non-zero exit)");
+cli.option("--outDir <dir>", "Override output directory (instead of config outDir)");
 
 cli
   .command("init", `Create ${DEFAULT_CONFIG_FILES[0]} and output folder`)
@@ -62,7 +63,7 @@ cli
     log("Created ./forgeui/");
   });
 
-async function runSync(params?: { config?: string; write?: boolean }): Promise<{
+async function runSync(params?: { config?: string; write?: boolean; outDir?: string }): Promise<{
   cfgPath: string;
   tokensAbs: string;
   cssPath: string;
@@ -74,7 +75,12 @@ async function runSync(params?: { config?: string; write?: boolean }): Promise<{
 }> {
   const cfgPath = resolveConfigPath(params?.config);
   const cfg = await loadConfig(cfgPath);
+  if (params?.outDir) cfg.outDir = params.outDir;
+
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
+  if (!fs.existsSync(tokensAbs)) {
+    throw new Error(`Tokens file not found: ${cfg.tokensPath}`);
+  }
   const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
   const validation = validateTokensDoc(doc, cfg);
   if (GLOBAL.strict && validation.warnings.length) {
@@ -178,7 +184,7 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--dry-run", "Do not write files; compute outputs only")
   .action(async (opts: { config?: string; dryRun?: boolean }) => {
-    await runSync({ config: opts.config, write: !opts.dryRun });
+    await runSync({ config: opts.config, write: !opts.dryRun, outDir: cli.options.outDir });
   });
 
 cli
@@ -189,12 +195,12 @@ cli
     const cfg = await loadConfig(cfgPath);
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
-    await runSync({ config: cfgPath });
+    await runSync({ config: cfgPath, outDir: cli.options.outDir });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
     w.on("all", async () => {
       try {
-        await runSync({ config: cfgPath });
+        await runSync({ config: cfgPath, outDir: cli.options.outDir });
       } catch (e) {
         console.error(e);
       }
@@ -205,7 +211,7 @@ cli
   .command("diff", "Show what would change (tokens.css + preset + lock/manifest)")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .action(async (opts: { config?: string }) => {
-    const res = await runSync({ config: opts.config, write: false });
+    const res = await runSync({ config: opts.config, write: false, outDir: cli.options.outDir });
 
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";

@@ -18,7 +18,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 4. **Plugin system (v1)**: allow custom generators via config + hooks.
 5. **Component scaffolding (v1)**: `forgeui scaffold <component>` for React + Tailwind.
 6. **Type coverage**: tighten token typing + runtime guards for token leaves.
-7. **CLI UX**: add `--outDir` override + clearer errors for missing files/sets.
-8. **Release UX**: document the release process end-to-end (changeset → tag → publish).
-9. **Docs site polish**: search, grouping by namespace, theming.
-10. **Docs publishing**: GitHub Pages deploy for docs-site.
+7. **Release UX**: document the release process end-to-end (changeset → tag → publish).
+8. **Docs site polish**: search, grouping by namespace, theming.
+9. **Docs publishing**: GitHub Pages deploy for docs-site.
+10. **Type coverage**: tighten token typing + runtime guards for token leaves.
