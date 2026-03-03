@@ -49,6 +49,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - validate: exit non-zero when warnings exist + print a summary line
 - release: helper now does preflight + build + pack smoke + annotated tag + push (with --dry-run/--no-push)
 - ci: build docs-site + verify Pages base path/assets on ubuntu+windows
+- docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
