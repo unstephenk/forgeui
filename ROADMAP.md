@@ -18,17 +18,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Tailwind v3 compatibility: optional preset output format (CJS + v3 usage)
 - Figma pull (v1): `forgeui figma pull` stub (env vars + clear errors)
 - Plugin system (v1): config + hooks interface scaffolding
+- CLI polish: better errors + exit codes + `--json` stability
 
 ## Next (keep >= 10)
-1. **CLI polish**: better errors + exit codes + `--json` stability.
-2. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
-3. **Type/runtime guards**: expand guards + validation messages.
-4. **Docs site**: generated token docs linkable anchors + permalinks.
-5. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
-6. **Docs site**: add per-theme column toggles.
-7. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
-8. **Docs site**: render token "type" badges and sortable columns.
-9. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
-10. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
-11. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
-12. **Plugins**: document plugin authoring + provide an example plugin.
+1. **Token normalization**: normalize units (`px`/`rem`), numeric strings, and common edge cases.
+2. **Type/runtime guards**: expand guards + validation messages.
+3. **Docs site**: generated token docs linkable anchors + permalinks.
+4. **Config DX**: support `forgeui.config.(m)js` default exports in more shapes.
+5. **Docs site**: add per-theme column toggles.
+6. **Docs site**: show per-token “path” breadcrumbs + namespace badges.
+7. **Docs site**: render token "type" badges and sortable columns.
+8. **Docs**: publish a minimal "Troubleshooting" page for common export issues.
+9. **Tailwind**: document v3 config + CJS preset option in GETTING_STARTED.
+10. **Figma pull**: support `FIGMA_FILE_KEY` + `FIGMA_NODE_ID` as an alternate fetch mode.
+11. **Plugins**: document plugin authoring + provide an example plugin.
+12. **CLI**: add `--debug` to print stacks for errors.

@@ -41,6 +41,26 @@ function log(s: string) {
   if (!GLOBAL.quiet && !GLOBAL.json) console.log(s);
 }
 
+let _fatalHandled = false;
+function fatal(e: unknown) {
+  if (_fatalHandled) return;
+  _fatalHandled = true;
+
+  const err = e instanceof Error ? e : new Error(String(e));
+
+  if (GLOBAL.json) {
+    process.stdout.write(JSON.stringify({ ok: false, error: { message: err.message } }, null, 2) + "\n");
+  } else {
+    // Keep it readable; stacks are for debugging.
+    console.error(`[forgeui] ${err.message}`);
+  }
+
+  process.exitCode = 1;
+}
+
+process.on("unhandledRejection", fatal);
+process.on("uncaughtException", fatal);
+
 const cli = cac("forgeui");
 cli.option("--quiet", "Suppress non-essential output");
 cli.option("--json", "Output machine-readable JSON (where supported)");
@@ -205,7 +225,7 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--dry-run", "Do not write files; compute outputs only")
   .action(async (opts: { config?: string; dryRun?: boolean }) => {
-    await runSync({ config: opts.config, write: !opts.dryRun, outDir: cli.options.outDir });
+    await runSync({ config: opts.config, write: !opts.dryRun, outDir: ((cli as any).opts?.() ?? {}).outDir });
   });
 
 cli
@@ -216,12 +236,12 @@ cli
     const cfg = await loadConfig(cfgPath);
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
-    await runSync({ config: cfgPath, outDir: cli.options.outDir });
+    await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
     w.on("all", async () => {
       try {
-        await runSync({ config: cfgPath, outDir: cli.options.outDir });
+        await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir });
       } catch (e) {
         console.error(e);
       }
@@ -232,7 +252,7 @@ cli
   .command("diff", "Show what would change (tokens.css + preset + lock/manifest)")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .action(async (opts: { config?: string }) => {
-    const res = await runSync({ config: opts.config, write: false, outDir: cli.options.outDir });
+    const res = await runSync({ config: opts.config, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir });
 
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
