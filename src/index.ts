@@ -17,6 +17,7 @@ import { generateTokenIndex } from "./docsgen.js";
 import { generateTokensMarkdown } from "./docsmd.js";
 import { asConfigSchema } from "./schema.js";
 import { writeTokensTemplate } from "./template.js";
+import { figmaPull } from "./figma.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -243,6 +244,21 @@ cli
     }
 
     process.exitCode = 1;
+  });
+
+cli
+  .command("figma pull", "Fetch tokens JSON (stub) and write to your tokensPath")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .option("--out <file>", "Override output file (defaults to config tokensPath)")
+  .action(async (opts: { config?: string; out?: string }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+
+    const outFile = opts.out ?? cfg.tokensPath;
+    await figmaPull({ outFile });
+
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [outFile] }, null, 2) + "\n");
+    else log(`Wrote ${outFile}`);
   });
 
 cli
