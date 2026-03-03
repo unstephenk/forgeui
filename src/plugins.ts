@@ -2,6 +2,7 @@ import path from "node:path";
 import jitiFactory from "jiti";
 
 import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
+import { validatePluginOptions } from "./plugins_schema.js";
 
 export type ForgeUIPluginContext = {
   cfg: ForgeUIConfig;
@@ -21,6 +22,8 @@ export type ForgeUIPlugin<TOptions extends Record<string, unknown> = Record<stri
   };
   // Optional: validate plugin options and throw a readable error.
   validateOptions?: (options: TOptions) => void;
+  // Optional: JSON Schema for plugin options (validated by ForgeUI if provided)
+  optionsSchema?: unknown;
   // Internal metadata for better error messages.
   __forgeui?: {
     module: string;
@@ -77,6 +80,12 @@ export async function loadPlugins(cfg: ForgeUIConfig): Promise<ForgeUIPlugin[]> 
 
     // Attach options (non-standard but convenient for v1)
     (plugin as any).options = def.options ?? {};
+
+    // Validate options if plugin provides a schema
+    if ((plugin as any).optionsSchema) {
+      const res = validatePluginOptions((plugin as any).optionsSchema, (plugin as any).options);
+      if (!res.ok) throw new Error(`Invalid options for plugin ${pluginLabel(plugin)}: ${res.error}`);
+    }
 
     // Validate options if plugin provides a validator
     if (typeof (plugin as any).validateOptions === "function") {
