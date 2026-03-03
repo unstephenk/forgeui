@@ -45,6 +45,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs: polish tokens.md markdown output (grouped sections + index)
 - docs-site: add Getting Started page with clear Tailwind v4 vs v3 wiring + preset usage
 - plugins: config schema supports name/enabled + better load/hook error context
+- figma pull: persist cached snapshots to disk + materialize output on 304 when missing
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
@@ -56,7 +57,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 7. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
 8. **Tailwind**: add v3 mode golden tests for themeFile split output.
 9. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-10. **Figma pull**: persist cache snapshots to disk to enable true no-fetch runs.
+10. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
 11. **CLI**: validate should return non-zero when warnings exist (or provide a flag), plus a summary line.
 12. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
 13. **Release**: helper should create + push git tag, and print post-release next steps.

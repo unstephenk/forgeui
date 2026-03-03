@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -90,6 +91,7 @@ function extractTokensStudioFromNodePayload(node: any): any | null {
 
 type FigmaPullResult = {
   written: boolean;
+  fromCache?: boolean;
   etag?: string | null;
   cacheKey?: string;
 };
@@ -98,7 +100,7 @@ function cacheFilePath(cwd: string): string {
   return path.join(cwd, ".forgeui", "figma.pull.cache.json");
 }
 
-function readCache(cwd: string): Record<string, { etag?: string }> {
+function readCache(cwd: string): Record<string, { etag?: string; snapshot?: string }> {
   const p = cacheFilePath(cwd);
   try {
     if (!fs.existsSync(p)) return {};
@@ -111,10 +113,33 @@ function readCache(cwd: string): Record<string, { etag?: string }> {
   }
 }
 
-function writeCache(cwd: string, cache: Record<string, { etag?: string }>) {
+function writeCache(cwd: string, cache: Record<string, { etag?: string; snapshot?: string }>) {
   const p = cacheFilePath(cwd);
   ensureDir(path.dirname(p));
   fs.writeFileSync(p, JSON.stringify(cache, null, 2) + "\n", "utf8");
+}
+
+function snapshotPathFor(cwd: string, cacheKey: string): string {
+  const h = crypto.createHash("sha1").update(cacheKey).digest("hex").slice(0, 12);
+  return path.join(cwd, ".forgeui", "cache", "figma", `${h}.json`);
+}
+
+function writeSnapshot(cwd: string, cacheKey: string, json: any): string {
+  const abs = snapshotPathFor(cwd, cacheKey);
+  ensureDir(path.dirname(abs));
+  fs.writeFileSync(abs, JSON.stringify(json, null, 2) + "\n", "utf8");
+  return abs;
+}
+
+function tryReadSnapshot(cwd: string, cacheKey: string, hintPath?: string): any | null {
+  const abs = hintPath ? path.resolve(cwd, hintPath) : snapshotPathFor(cwd, cacheKey);
+  try {
+    if (!fs.existsSync(abs)) return null;
+    const raw = fs.readFileSync(abs, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResult> {
@@ -140,6 +165,15 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
+      const outAbs = path.resolve(process.cwd(), params.outFile);
+      if (!fs.existsSync(outAbs)) {
+        const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+        if (snap) {
+          ensureDir(path.dirname(outAbs));
+          fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+          return { written: true, fromCache: true, etag, cacheKey };
+        }
+      }
       return { written: false, etag, cacheKey };
     }
 
@@ -150,11 +184,13 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
 
     const nextEtag = res.headers.get("etag");
     if (nextEtag) {
-      cache[cacheKey] = { etag: nextEtag };
-      writeCache(cwd, cache);
+      cache[cacheKey] = { ...(cache[cacheKey] ?? {}), etag: nextEtag };
     }
 
     json = await res.json();
+    const snapAbs = writeSnapshot(cwd, cacheKey, json);
+    cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
+    writeCache(cwd, cache);
   } else if (fileKey && nodeId) {
     if (!token) {
       throw new Error(
@@ -181,6 +217,15 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
+      const outAbs = path.resolve(process.cwd(), params.outFile);
+      if (!fs.existsSync(outAbs)) {
+        const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+        if (snap) {
+          ensureDir(path.dirname(outAbs));
+          fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+          return { written: true, fromCache: true, etag, cacheKey };
+        }
+      }
       return { written: false, etag, cacheKey };
     }
 
@@ -191,8 +236,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
 
     const nextEtag = res.headers.get("etag");
     if (nextEtag) {
-      cache[cacheKey] = { etag: nextEtag };
-      writeCache(cwd, cache);
+      cache[cacheKey] = { ...(cache[cacheKey] ?? {}), etag: nextEtag };
     }
 
     const payload = await res.json();
@@ -211,6 +255,9 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     }
 
     json = extracted;
+    const snapAbs = writeSnapshot(cwd, cacheKey, json);
+    cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
+    writeCache(cwd, cache);
   } else {
     throw new Error(
       [
