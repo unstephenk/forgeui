@@ -12,6 +12,8 @@ type FigmaPullParams = {
   fileKey?: string;
   nodeId?: string;
   token?: string;
+  // If true, never call the network; use cached snapshot only.
+  noFetch?: boolean;
 };
 
 function sleep(ms: number) {
@@ -157,6 +159,15 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     const cacheKey = `url:${url}`;
     const etag = cache[cacheKey]?.etag;
 
+    if (params.noFetch) {
+      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
+      const outAbs = path.resolve(process.cwd(), params.outFile);
+      ensureDir(path.dirname(outAbs));
+      fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+      return { written: true, fromCache: true, etag, cacheKey };
+    }
+
     const res = await fetchWithRateLimit(url, {
       headers: {
         ...(token ? { "X-Figma-Token": token } : {}),
@@ -208,6 +219,15 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     const apiUrl = `https://api.figma.com/v1/files/${encodeURIComponent(fileKey)}/nodes?ids=${encodeURIComponent(nodeId)}`;
     const cacheKey = `node:${fileKey}:${nodeId}`;
     const etag = cache[cacheKey]?.etag;
+
+    if (params.noFetch) {
+      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
+      const outAbs = path.resolve(process.cwd(), params.outFile);
+      ensureDir(path.dirname(outAbs));
+      fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+      return { written: true, fromCache: true, etag, cacheKey };
+    }
 
     const res = await fetchWithRateLimit(apiUrl, {
       headers: {

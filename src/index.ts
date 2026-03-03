@@ -321,15 +321,33 @@ cli
   .option("--fileKey <key>", "Figma file key (alternate mode; uses Figma REST API)")
   .option("--nodeId <id>", "Figma node id (alternate mode; uses Figma REST API)")
   .option("--token <token>", "Override FIGMA_TOKEN")
-  .action(async (opts: { config?: string; out?: string; url?: string; fileKey?: string; nodeId?: string; token?: string }) => {
+  .option("--no-fetch", "Do not call network; use cached snapshot only", { default: false })
+  .action(async (opts: {
+    config?: string;
+    out?: string;
+    url?: string;
+    fileKey?: string;
+    nodeId?: string;
+    token?: string;
+    fetch?: boolean;
+  }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     const outFile = opts.out ?? cfg.tokensPath;
-    const res = await figmaPull({ outFile, url: opts.url, fileKey: opts.fileKey, nodeId: opts.nodeId, token: opts.token });
+    const res = await figmaPull({
+      outFile,
+      url: opts.url,
+      fileKey: opts.fileKey,
+      nodeId: opts.nodeId,
+      token: opts.token,
+      noFetch: opts.fetch === false,
+    });
 
     if (GLOBAL.json) {
-      process.stdout.write(JSON.stringify({ ok: true, written: res.written ? [outFile] : [], unchanged: !res.written }, null, 2) + "\n");
+      process.stdout.write(
+        JSON.stringify({ ok: true, written: res.written ? [outFile] : [], unchanged: !res.written }, null, 2) + "\n",
+      );
     } else {
       if (res.written) log(`Wrote ${outFile}`);
       else log("No changes (cached). ");
