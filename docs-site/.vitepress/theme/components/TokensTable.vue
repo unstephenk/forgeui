@@ -8,7 +8,7 @@
       <a v-if="ns !== 'components'" href="tokens-components">Components</a>
       <strong v-else>Components</strong>
 
-      <input class="tok-input" v-model="q" placeholder="Search…" />
+      <input ref="searchEl" class="tok-input" v-model="q" placeholder="Search…" />
     </div>
 
     <div v-if="loading">Loading…</div>
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 
 type Entry = { token: string; type: string; cssVar: string; themes?: Record<string, any> }
@@ -77,6 +77,7 @@ const ns = props.ns ?? ''
 const loading = ref(true)
 const error = ref('')
 const q = ref('')
+const searchEl = ref<HTMLInputElement | null>(null)
 const nsFilter = ref('')
 const data = ref<{ tokens: Entry[] } | null>(null)
 
@@ -117,7 +118,26 @@ async function copy(text: any) {
   }
 }
 
+function focusSearch() {
+  searchEl.value?.focus()
+}
+
+function onKeyDown(e: KeyboardEvent) {
+  // Press '/' to focus search (like GitHub)
+  if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+    e.preventDefault()
+    focusSearch()
+  }
+
+  // Escape clears search + namespace filter
+  if (e.key === 'Escape') {
+    if (q.value) q.value = ''
+    if (nsFilter.value) nsFilter.value = ''
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener('keydown', onKeyDown)
   try {
     const res = await fetch(withBase('/tokens.index.json'))
     data.value = await res.json()
@@ -126,5 +146,9 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown)
 })
 </script>
