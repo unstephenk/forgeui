@@ -41,6 +41,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: token detail page "Copy JSON" action
 - CLI: add `forgeui check` (schema+validate+diff)
 - figma pull: support writing multiple outputs (extracted + raw payload)
+- docs: add Supported token types page (docs-site)
 - figma pull: retry 429 rate limits (Retry-After)
 - validate: warn on token-like objects missing $type/$value (paths)
 - docs-site: add namespace filter chips + ns:... search hint
@@ -56,15 +57,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Docs**: add a clear "Supported token types" page.
-2. **Tokens**: support `typography` token → Tailwind fontSize tuple output.
-3. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
-4. **Docs site**: token table keyboard navigation (j/k, enter to open).
-5. **DX**: add `forgeui doctor` to print environment + config summary.
-6. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
-7. **Docs site**: add a "copy path" button for token detail.
-8. **Docs site**: add link/button from token detail → "view in table".
-9. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
-10. **Docs**: add a migration page for Tailwind v3 → v4 users.
-11. **Tokens**: add `border` token type mapping + tests.
-12. **Figma pull**: add a `--cache-dir` override (for CI).
+1. **Tokens**: support `typography` token → Tailwind fontSize tuple output.
+2. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+3. **Docs site**: token table keyboard navigation (j/k, enter to open).
+4. **DX**: add `forgeui doctor` to print environment + config summary.
+5. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
+6. **Docs site**: add a "copy path" button for token detail.
+7. **Docs site**: add link/button from token detail → "view in table".
+8. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
+9. **Docs**: add a migration page for Tailwind v3 → v4 users.
+10. **Tokens**: add `border` token type mapping + tests.
+11. **Figma pull**: add a `--cache-dir` override (for CI).
+12. **Docs site**: add a small "data freshness" hint (last generated timestamp).
