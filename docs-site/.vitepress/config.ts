@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'ForgeUI',
   description: 'Tokens Studio → Tailwind + CSS vars',
+  base: process.env.VITEPRESS_BASE ?? '/',
   themeConfig: {
     search: {
       provider: 'local',

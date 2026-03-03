@@ -34,7 +34,16 @@ jobs:
 
       - name: Build
         working-directory: docs-site
+        env:
+          # Project pages need an explicit base path.
+          VITEPRESS_BASE: "/forgeui/"
         run: npm run build
+
+      - name: Verify dist has base path
+        run: |
+          test -d docs-site/.vitepress/dist
+          # quick smoke check: generated HTML should reference the repo base
+          grep -R "\"/forgeui/\"" -n docs-site/.vitepress/dist/index.html >/dev/null
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
