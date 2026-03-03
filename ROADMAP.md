@@ -39,17 +39,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - plugins: add hook coverage tests + example plugin that mutates outputs
 - figma pull: retry 429 rate limits (Retry-After)
 - validate: warn on token-like objects missing $type/$value (paths)
+- docs-site: add namespace filter chips + ns:... search hint
 
 ## Next (keep >= 10)
 1. **Docs**: document token normalization options (px/rem conversion).
 2. **Plugins**: add a "prettier" example plugin + docs on option validation.
 3. **Docs site**: auto-generate namespace pages from tokens.index.json.
-4. **Docs site**: add namespace filters to search.
-5. **Release**: improve helper (preflight checks + dry-run + clearer output).
-6. **Docs site**: add a CI job that builds Pages output on PRs.
-7. **Docs**: polish tokens.md output (group sections + anchors).
-8. **CI**: add docs-site build + base-path verification to the main CI workflow.
-9. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
-10. **Docs site**: add Pages deploy verification test (base path + asset URLs).
-11. **Tailwind**: add v3 mode golden tests for themeFile split output.
-12. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+4. **Release**: improve helper (preflight checks + dry-run + clearer output).
+5. **Docs site**: add a CI job that builds Pages output on PRs.
+6. **Docs**: polish tokens.md output (group sections + anchors).
+7. **CI**: add docs-site build + base-path verification to the main CI workflow.
+8. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+9. **Docs site**: add Pages deploy verification test (base path + asset URLs).
+10. **Tailwind**: add v3 mode golden tests for themeFile split output.
+11. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+12. **Docs site**: add a /tokens?ns=… deep-link section index sidebar.
