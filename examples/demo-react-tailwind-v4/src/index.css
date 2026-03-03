@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "../../../forgeui/tokens.css";
+
+/* ForgeUI: Tailwind v4 preset */
+@config "../../../forgeui/forgeui.preset.ts";
+
+:root {
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
