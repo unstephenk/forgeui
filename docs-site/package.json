@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx vitepress dev",
+    "prebuild": "node scripts/gen-namespaces.mjs",
     "build": "npx vitepress build",
     "preview": "npx vitepress preview"
   },

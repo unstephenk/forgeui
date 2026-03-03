@@ -52,15 +52,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Docs site**: auto-generate namespace pages from tokens.index.json.
-2. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
-3. **Tailwind**: add v3 mode golden tests for themeFile split output.
-4. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-5. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
-6. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
-7. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
-8. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
-9. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
-10. **Docs site**: token table keyboard navigation (j/k, enter to open).
-11. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
-12. **Plugins**: add a builtin plugin registry (short names, no module paths).
+1. **Docs site**: improve search UX (namespace filter chips + keyboard focus).
+2. **Tailwind**: add v3 mode golden tests for themeFile split output.
+3. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+4. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
+5. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
+6. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
+7. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
+8. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+9. **Docs site**: token table keyboard navigation (j/k, enter to open).
+10. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
+11. **Plugins**: add a builtin plugin registry (short names, no module paths).
+12. **Docs site**: add a "copy JSON" button for token detail.
