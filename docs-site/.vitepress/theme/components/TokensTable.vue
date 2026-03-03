@@ -15,6 +15,8 @@
     <div v-else-if="error" class="tok-error"><code>{{ error }}</code></div>
 
     <div v-else>
+      <p class="tok-hint"><small>Keyboard: <code>/</code> focus search, <code>j</code>/<code>k</code> move, <code>Enter</code> open, <code>Esc</code> clear.</small></p>
+
       <div v-if="ns === ''" class="tok-chips">
         <a
           v-for="n in namespaces"
@@ -38,7 +40,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="t in filtered" :key="t.token">
+          <tr v-for="(t, idx) in filtered" :key="t.token" :class="{ 'tok-row-selected': idx === selected }">
             <td>
               <a :href="`token?token=${encodeURIComponent(String(t.token))}`"><code>{{ t.token }}</code></a>
             </td>
@@ -80,6 +82,7 @@ const q = ref('')
 const searchEl = ref<HTMLInputElement | null>(null)
 const nsFilter = ref('')
 const data = ref<{ tokens: Entry[] } | null>(null)
+const selected = ref(0)
 
 const themeList = computed(() => {
   const set = new Set<string>()
@@ -103,6 +106,8 @@ const filtered = computed(() => {
     const hay = [t.token, t.type, t.cssVar, ...Object.values(t.themes ?? {})].join(' ').toLowerCase()
     return hay.includes(qq)
   })
+  // keep selected index in range
+  if (selected.value >= tokens.length) selected.value = Math.max(0, tokens.length - 1)
   return tokens
 })
 
@@ -123,16 +128,37 @@ function focusSearch() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  const isTyping = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+
   // Press '/' to focus search (like GitHub)
-  if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+  if (e.key === '/' && !isTyping) {
     e.preventDefault()
     focusSearch()
+    return
   }
 
   // Escape clears search + namespace filter
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' && !isTyping) {
     if (q.value) q.value = ''
     if (nsFilter.value) nsFilter.value = ''
+    return
+  }
+
+  // j/k navigation over filtered rows
+  if (!isTyping && (e.key === 'j' || e.key === 'k')) {
+    e.preventDefault()
+    const max = Math.max(0, filtered.value.length - 1)
+    if (e.key === 'j') selected.value = Math.min(max, selected.value + 1)
+    if (e.key === 'k') selected.value = Math.max(0, selected.value - 1)
+    return
+  }
+
+  // Enter opens token detail
+  if (!isTyping && e.key === 'Enter') {
+    const row = filtered.value[selected.value]
+    if (row?.token) {
+      window.location.href = `token?token=${encodeURIComponent(String(row.token))}`
+    }
   }
 }
 
