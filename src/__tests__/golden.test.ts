@@ -48,4 +48,16 @@ describe("golden fixtures", () => {
     expect(normalizeNewlines(preset)).toBe(normalizeNewlines(presetExpected));
     expect(normalizeNewlines(theme!)).toBe(normalizeNewlines(themeExpected));
   });
+
+  it("generates Tailwind v3 (CJS) preset deterministically", () => {
+    const doc = readJson(path.join(FIXTURES, "tokens.themesets.json")) as TokensStudioDoc;
+    const cfg = defaultConfig();
+    cfg.tailwind.presetUsage = "v3";
+    cfg.tailwind.presetFile = "forgeui.preset.cjs";
+
+    const preset = generateTailwindPreset(doc, cfg).preset;
+
+    const expected = fs.readFileSync(path.join(GOLDEN, "forgeui.preset.v3.cjs"), "utf8");
+    expect(normalizeNewlines(preset)).toBe(normalizeNewlines(expected));
+  });
 });
