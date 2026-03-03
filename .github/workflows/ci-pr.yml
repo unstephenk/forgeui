@@ -1,8 +1,7 @@
-name: CI
+name: CI (PR)
 
 on:
-  push:
-    branches: [main]
+  pull_request:
 
 jobs:
   test:
@@ -35,28 +34,27 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: NPM pack smoke test
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm pack --silent
-          TARBALL=$(ls -1 *.tgz | head -n 1)
-          mkdir -p /tmp/forgeui-packtest
-          cd /tmp/forgeui-packtest
-          npm init -y >/dev/null
-          npm i "${GITHUB_WORKSPACE}/${TARBALL}" >/dev/null
-          node -e "require('@forgeui/cli')" >/dev/null
-          npx forgeui --help >/dev/null
+  docs_site:
+    name: Docs site build (PR-only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Docs site install
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: docs-site/package-lock.json
+
+      - name: Install
         working-directory: docs-site
         run: npm ci
 
-      - name: Docs site build (Pages base path)
+      - name: Build
         working-directory: docs-site
         env:
-          VITEPRESS_BASE: "/forgeui/"
+          VITEPRESS_BASE: /forgeui/
         run: npm run build
 
-      - name: Verify docs dist (base path + assets)
+      - name: Verify dist
         run: node scripts/verify-docs-dist.mjs docs-site/.vitepress/dist /forgeui/

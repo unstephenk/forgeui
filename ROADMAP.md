@@ -52,8 +52,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
-2. **Plugins**: add a builtin plugin registry (short names, no module paths).
+1. **Plugins**: add a builtin plugin registry (short names, no module paths).
+2. **Docs site**: add a "copy JSON" button for token detail.
 3. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
 4. **Docs site**: token table keyboard navigation (j/k, enter to open).
 5. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
