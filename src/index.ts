@@ -468,6 +468,64 @@ cli
   });
 
 cli
+  .command("doctor", "Print environment + config summary")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .action(async (opts: { config?: string }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+
+    const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
+    const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
+    const schemaAbs = path.resolve(process.cwd(), "forgeui.config.schema.json");
+
+    const info = {
+      ok: true,
+      node: process.version,
+      platform: process.platform,
+      cwd: process.cwd(),
+      config: {
+        path: cfgPath,
+        valid: true
+      },
+      tokens: {
+        path: cfg.tokensPath,
+        exists: fs.existsSync(tokensAbs),
+        abs: tokensAbs
+      },
+      outDir: {
+        path: outDir,
+        abs: path.resolve(process.cwd(), outDir)
+      },
+      plugins: (cfg.plugins ?? []).map((p) => ({ name: p.name ?? null, module: p.module, enabled: p.enabled !== false })),
+      figmaEnv: {
+        FIGMA_TOKENS_URL: Boolean(process.env.FIGMA_TOKENS_URL),
+        FIGMA_FILE_KEY: Boolean(process.env.FIGMA_FILE_KEY),
+        FIGMA_NODE_ID: Boolean(process.env.FIGMA_NODE_ID),
+        FIGMA_TOKEN: Boolean(process.env.FIGMA_TOKEN)
+      },
+      schemaFile: {
+        path: path.relative(process.cwd(), schemaAbs),
+        exists: fs.existsSync(schemaAbs)
+      }
+    };
+
+    if (GLOBAL.json) process.stdout.write(JSON.stringify(info, null, 2) + "\n");
+    else {
+      log(`Node: ${info.node}`);
+      log(`Platform: ${info.platform}`);
+      log(`CWD: ${info.cwd}`);
+      log(`Config: ${info.config.path}`);
+      log(`Tokens: ${info.tokens.path} (${info.tokens.exists ? "found" : "missing"})`);
+      log(`OutDir: ${outDir}`);
+      if (info.plugins.length) {
+        log(`Plugins:`);
+        for (const p of info.plugins) log(`- ${p.enabled ? "on" : "off"} ${p.module}${p.name ? ` (${p.name})` : ""}`);
+      }
+      log(`Schema file: ${info.schemaFile.exists ? "present" : "missing"} (${info.schemaFile.path})`);
+    }
+  });
+
+cli
   .command("validate", "Validate tokens.json and print warnings")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .action(async (opts: { config?: string }) => {

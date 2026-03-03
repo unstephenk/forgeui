@@ -45,6 +45,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - tokens: typography tokens emit Tailwind fontSize tuples (themeable via CSS vars)
 - docs-site: auto-generate token type pages (with pre-filtered TokensTable)
 - docs-site: token table keyboard navigation (j/k, enter to open)
+- CLI: add `forgeui doctor` to print environment + config summary
 - figma pull: retry 429 rate limits (Retry-After)
 - validate: warn on token-like objects missing $type/$value (paths)
 - docs-site: add namespace filter chips + ns:... search hint
@@ -60,15 +61,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **DX**: add `forgeui doctor` to print environment + config summary.
-2. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
-3. **Docs site**: add a "copy path" button for token detail.
-4. **Docs site**: add link/button from token detail → "view in table".
-5. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
-6. **Docs**: add a migration page for Tailwind v3 → v4 users.
-7. **Tokens**: add `border` token type mapping + tests.
-8. **Figma pull**: add a `--cache-dir` override (for CI).
-9. **Docs site**: add a small "data freshness" hint (last generated timestamp).
-10. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-11. **Docs site**: add token table: sticky header + horizontal scroll hint.
-12. **CLI**: add `forgeui fmt` for formatting generated outputs.
+1. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
+2. **Docs site**: add a "copy path" button for token detail.
+3. **Docs site**: add link/button from token detail → "view in table".
+4. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
+5. **Docs**: add a migration page for Tailwind v3 → v4 users.
+6. **Tokens**: add `border` token type mapping + tests.
+7. **Figma pull**: add a `--cache-dir` override (for CI).
+8. **Docs site**: add a small "data freshness" hint (last generated timestamp).
+9. **Tokens**: add typography → `theme.extend.typography` mapping (future).
+10. **Docs site**: add token table: sticky header + horizontal scroll hint.
+11. **CLI**: add `forgeui fmt` for formatting generated outputs.
+12. **Docs**: document plugin authoring best practices + examples.
