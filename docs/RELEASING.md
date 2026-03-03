@@ -25,9 +25,18 @@ Commit and push.
 
 ## 3) Tag a release
 
+You can do it manually:
+
 ```bash
 git tag vX.Y.Z
 git push origin vX.Y.Z
+```
+
+Or use the one-command helper (tags whatever is currently in `package.json`):
+
+```bash
+npm run release
+# or: npm run release -- --push
 ```
 
 ## 4) What CI does
