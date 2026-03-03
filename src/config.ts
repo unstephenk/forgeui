@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import jitiFactory from "jiti";
-import Ajv from "ajv/dist/2020";
+import Ajv from "ajv/dist/2020.js";
 import type { ForgeUIConfig } from "./types.js";
 import { CONFIG_SCHEMA } from "./schema.js";
 
