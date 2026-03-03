@@ -259,6 +259,23 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
           lines.push(`  ${varName}: ${shadowToCssValue(resolved)};`);
         } else if (t.leaf.$type === "dimension") {
           lines.push(`  ${varName}: ${normalizeDimension(resolved, dimOpts)};`);
+        } else if (t.leaf.$type === "typography" && isObject(resolved)) {
+          // Expand composite typography tokens into per-field CSS vars.
+          const base = varName;
+          const ff = (resolved as any).fontFamily;
+          const fs = (resolved as any).fontSize;
+          const fw = (resolved as any).fontWeight;
+          const ls = (resolved as any).letterSpacing;
+          const lh = (resolved as any).lineHeight;
+
+          if (ff != null) {
+            const v = Array.isArray(ff) ? ff.join(", ") : String(ff);
+            lines.push(`  ${base}-font-family: ${v};`);
+          }
+          if (fs != null) lines.push(`  ${base}-font-size: ${String(fs)};`);
+          if (fw != null) lines.push(`  ${base}-font-weight: ${String(fw)};`);
+          if (ls != null) lines.push(`  ${base}-letter-spacing: ${String(ls)};`);
+          if (lh != null) lines.push(`  ${base}-line-height: ${String(lh)};`);
         } else {
           lines.push(`  ${varName}: ${String(resolved)};`);
         }
@@ -406,23 +423,34 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         if (!isObject(resolved)) continue;
 
         const k = key.join("-");
+
+        // Use the per-field CSS vars emitted by generateTokensCss.
+        // This keeps Tailwind values themeable via `[data-theme=...]`.
+        const baseVar = `--${toKebab(t.path)}`;
+        const ffVar = `var(${baseVar}-font-family)`;
+        const fsVar = `var(${baseVar}-font-size)`;
+        const fwVar = `var(${baseVar}-font-weight)`;
+        const lsVar = `var(${baseVar}-letter-spacing)`;
+        const lhVar = `var(${baseVar}-line-height)`;
+
         const ff = (resolved as any).fontFamily;
         const fs = (resolved as any).fontSize;
         const fw = (resolved as any).fontWeight;
         const ls = (resolved as any).letterSpacing;
         const lh = (resolved as any).lineHeight;
 
-        if (ff) fontFamily[k] = Array.isArray(ff) ? ff : [String(ff)];
-        if (fw) fontWeight[k] = String(fw);
-        if (ls) letterSpacing[k] = String(ls);
-        if (lh) lineHeight[k] = String(lh);
-        if (fs) {
-          // Allow Tailwind to accept either a string or [size, options].
+        if (ff != null) fontFamily[k] = [ffVar];
+        if (fw != null) fontWeight[k] = fwVar;
+        if (ls != null) letterSpacing[k] = lsVar;
+        if (lh != null) lineHeight[k] = lhVar;
+
+        if (fs != null) {
+          // Tailwind accepts either a string or [size, options].
           const opts: any = {};
-          if (lh) opts.lineHeight = String(lh);
-          if (ls) opts.letterSpacing = String(ls);
-          if (fw) opts.fontWeight = String(fw);
-          fontSize[k] = Object.keys(opts).length ? [String(fs), opts] : String(fs);
+          if (lh != null) opts.lineHeight = lhVar;
+          if (ls != null) opts.letterSpacing = lsVar;
+          if (fw != null) opts.fontWeight = fwVar;
+          fontSize[k] = Object.keys(opts).length ? [fsVar, opts] : fsVar;
         }
 
         continue;
