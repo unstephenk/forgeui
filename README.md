@@ -2,6 +2,12 @@
 
 Design-tokens copilot: **Tokens Studio → Tailwind v4 + CSS variables**, shipped as a CLI.
 
+## About
+
+ForgeUI is a CLI that keeps your design tokens and your codebase in sync by turning **Tokens Studio exports** into **CSS variables** and a **Tailwind v4 preset**.
+
+**Mission:** make design-system tokens boringly reliable—one source of truth, deterministic outputs, and zero hand-edited drift.
+
 ## Install (dev)
 
 ```bash
