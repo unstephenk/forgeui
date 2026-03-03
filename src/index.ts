@@ -14,6 +14,7 @@ import { ensureDir, readJsonFile, writeFile } from "./utils.js";
 import { diffText } from "./textdiff.js";
 import { validateTokensDoc } from "./validate.js";
 import { generateTokenIndex } from "./docsgen.js";
+import { generateTokensMarkdown } from "./docsmd.js";
 import { asConfigSchema } from "./schema.js";
 import { writeTokensTemplate } from "./template.js";
 
@@ -239,9 +240,10 @@ cli
   });
 
 cli
-  .command("docs", "Generate a token index JSON for docs/search")
+  .command("docs", "Generate token docs outputs")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
+  .option("--md", "Also write a markdown table (tokens.md)")
+  .action(async (opts: { config?: string; md?: boolean }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
@@ -253,11 +255,19 @@ cli
     }
 
     const index = generateTokenIndex(doc, cfg);
-    const out = outPath(cfg, "tokens.index.json");
-    writeFile(out, JSON.stringify(index, null, 2) + "\n");
+    const outJson = outPath(cfg, "tokens.index.json");
+    writeFile(outJson, JSON.stringify(index, null, 2) + "\n");
 
-    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [path.relative(process.cwd(), out)] }, null, 2) + "\n");
-    else log(`Wrote ${path.relative(process.cwd(), out)}`);
+    const written: string[] = [path.relative(process.cwd(), outJson)];
+
+    if (opts.md) {
+      const outMd = outPath(cfg, "tokens.md");
+      writeFile(outMd, generateTokensMarkdown(index));
+      written.push(path.relative(process.cwd(), outMd));
+    }
+
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written }, null, 2) + "\n");
+    else for (const w of written) log(`Wrote ${w}`);
   });
 
 cli

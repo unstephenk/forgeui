@@ -17,8 +17,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 3. **Storybook integration (v1)**: auto-generate token docs page + theme switcher.
 4. **Plugin system (v1)**: allow custom generators via config + hooks.
 5. **Tailwind v3 compatibility**: optional output mode for legacy projects.
-6. **Token normalization**: normalize units (`px`/`rem`) and handle numeric dimensions consistently.
-7. **Docs: token index markdown**: optional `tokens.md` output in addition to JSON index.
-8. **Docs site**: simple Docusaurus/VitePress site consuming `tokens.index.json`.
-9. **Versioning**: decide on semver + add `changeset`/changelog flow.
-10. **Template command**: `forgeui template` writes a starter `tokens.json`.
+6. **Token normalization**: normalize units (`px`/`rem`) + ensure spacing/radius etc are consistent.
+7. **Docs: token index markdown**: output `tokens.md` (tables/sections) alongside `tokens.index.json`.
+8. **Docs site**: simple VitePress/Docusaurus site consuming `tokens.index.json`.
+9. **Versioning**: decide on semver + add changeset/changelog flow.
+10. **CI hardening**: add `node --version`, `npm --version`, and cache sanity; consider `npm audit` gating.
