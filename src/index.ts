@@ -365,10 +365,12 @@ cli
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
 
+    const warningCount = validation.warnings.length;
+
     if (GLOBAL.json) {
-      process.stdout.write(JSON.stringify({ ok: validation.warnings.length === 0, warnings: validation.warnings }, null, 2) + "\n");
+      process.stdout.write(JSON.stringify({ ok: warningCount === 0, warningCount, warnings: validation.warnings }, null, 2) + "\n");
     } else {
-      if (!validation.warnings.length) {
+      if (!warningCount) {
         log("No warnings.");
       } else {
         for (const w of validation.warnings) {
@@ -378,9 +380,12 @@ cli
           console.warn(`[forgeui warning] ${w.code}${where ? ` (${where})` : ""}: ${w.message}`);
         }
       }
+
+      log(`Warnings: ${warningCount}`);
     }
 
-    if (GLOBAL.strict && validation.warnings.length) process.exitCode = 1;
+    // validate is explicitly a checking command: exit non-zero when warnings exist.
+    process.exitCode = warningCount ? 1 : 0;
   });
 
 cli
