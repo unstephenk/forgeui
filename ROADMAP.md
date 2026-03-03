@@ -54,8 +54,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 ## Next (keep >= 10)
 1. **CLI**: allow `forgeui docs --md` to pick group ordering options.
 2. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
-3. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-4. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
+3. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
+4. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
 5. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
 6. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
 7. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.

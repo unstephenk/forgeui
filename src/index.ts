@@ -340,7 +340,8 @@ cli
   .command("docs", "Generate token docs outputs")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--md", "Also write a markdown table (tokens.md)")
-  .action(async (opts: { config?: string; md?: boolean }) => {
+  .option("--group-order <list>", "Comma-separated namespace order for tokens.md (e.g. core,components)")
+  .action(async (opts: { config?: string; md?: boolean; groupOrder?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
@@ -359,7 +360,13 @@ cli
 
     if (opts.md) {
       const outMd = outPath(cfg, "tokens.md");
-      writeFile(outMd, generateTokensMarkdown(index));
+      const order = opts.groupOrder
+        ? String(opts.groupOrder)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : undefined;
+      writeFile(outMd, generateTokensMarkdown(index, { groupOrder: order }));
       written.push(path.relative(process.cwd(), outMd));
     }
 

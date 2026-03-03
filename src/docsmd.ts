@@ -21,7 +21,10 @@ function mdTable(themes: string[], rows: string[][]): string[] {
   ];
 }
 
-export function generateTokensMarkdown(index: { generatedAt: string; tokens: TokenIndexEntry[] }): string {
+export function generateTokensMarkdown(
+  index: { generatedAt: string; tokens: TokenIndexEntry[] },
+  opts?: { groupOrder?: string[] }
+): string {
   const themeNames = new Set<string>();
   for (const t of index.tokens) for (const k of Object.keys(t.themes)) themeNames.add(k);
   const themes = Array.from(themeNames).sort();
@@ -33,7 +36,12 @@ export function generateTokensMarkdown(index: { generatedAt: string; tokens: Tok
     groups.get(ns)!.push(t);
   }
 
-  const nsList = Array.from(groups.keys()).sort();
+  const nsListDefault = Array.from(groups.keys()).sort();
+  const order = opts?.groupOrder ?? [];
+  const nsList = [
+    ...order.filter((ns) => groups.has(ns)),
+    ...nsListDefault.filter((ns) => !order.includes(ns))
+  ];
 
   const out: string[] = [];
   out.push("# Tokens");
