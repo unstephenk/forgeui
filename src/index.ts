@@ -405,6 +405,66 @@ cli
   });
 
 cli
+  .command("check", "Run schema+validate+diff (CI-friendly)")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .action(async (opts: { config?: string }) => {
+    // 1) schema: ensure checked-in schema matches current runtime schema
+    const schemaOut = path.resolve(process.cwd(), "forgeui.config.schema.json");
+    const nextSchema = JSON.stringify(asConfigSchema(), null, 2) + "\n";
+    const prevSchema = fs.existsSync(schemaOut) ? fs.readFileSync(schemaOut, "utf8") : null;
+    const schemaOk = prevSchema === nextSchema;
+
+    // 2) validate: tokens warnings
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+    const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
+    const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
+    const validation = validateTokensDoc(doc, cfg);
+    const warningsOk = validation.warnings.length === 0;
+
+    // 3) diff: generated outputs match what is on disk
+    const res = await runSync({ config: cfgPath, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir });
+    const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
+    const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
+    const cssD = diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) });
+    const presetD = diffText({ before: existingPreset, after: res.preset, label: path.relative(process.cwd(), res.presetPath) });
+    const diffOk = !cssD && !presetD;
+
+    const ok = schemaOk && warningsOk && diffOk;
+
+    if (GLOBAL.json) {
+      process.stdout.write(
+        JSON.stringify(
+          {
+            ok,
+            schema: { ok: schemaOk, file: path.relative(process.cwd(), schemaOut) },
+            validate: { ok: warningsOk, warningCount: validation.warnings.length, warnings: validation.warnings },
+            diff: {
+              ok: diffOk,
+              files: [
+                ...(cssD ? [path.relative(process.cwd(), res.cssPath)] : []),
+                ...(presetD ? [path.relative(process.cwd(), res.presetPath)] : [])
+              ]
+            }
+          },
+          null,
+          2
+        ) + "\n"
+      );
+    } else {
+      if (!schemaOk) console.error(`[forgeui] Schema out of date: ${path.relative(process.cwd(), schemaOut)} (run: forgeui schema)`);
+      if (!warningsOk) console.error(`[forgeui] Warnings: ${validation.warnings.length} (run: forgeui validate)`);
+      if (!diffOk) {
+        if (cssD) process.stdout.write(cssD);
+        if (presetD) process.stdout.write(presetD);
+      }
+      if (ok) log("OK");
+    }
+
+    process.exitCode = ok ? 0 : 1;
+  });
+
+cli
   .command("validate", "Validate tokens.json and print warnings")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .action(async (opts: { config?: string }) => {
