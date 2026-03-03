@@ -52,15 +52,15 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **CLI**: allow `forgeui docs --md` to pick group ordering options.
-2. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
-3. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
-4. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
-5. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
-6. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
-7. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
-8. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
-9. **Docs site**: token table keyboard navigation (j/k, enter to open).
-10. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
-11. **Plugins**: add a builtin plugin registry (short names, no module paths).
-12. **Docs site**: add a "copy JSON" button for token detail.
+1. **Plugins**: validate plugin `options` against an optional plugin-provided schema (nice errors).
+2. **Release**: print post-release checklist + link to the GitHub Actions run that will publish.
+3. **Docs site**: auto-generate token type pages (colors/dimensions/shadows/typography).
+4. **Docs site**: token table keyboard navigation (j/k, enter to open).
+5. **CI**: add docs-site build as a PR-only job (skip on non-doc changes).
+6. **Plugins**: add a builtin plugin registry (short names, no module paths).
+7. **Docs site**: add a "copy JSON" button for token detail.
+8. **CLI**: add `forgeui check` to run validate+diff+schema in one command.
+9. **Figma pull**: support writing multiple outputs (raw snapshot + extracted tokens).
+10. **Docs**: add a clear "Supported token types" page.
+11. **Tokens**: support `typography` token → Tailwind fontSize tuple output.
+12. **DX**: add `forgeui doctor` to print environment + config summary.

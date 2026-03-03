@@ -35,6 +35,7 @@ const GLOBAL = {
   quiet: argv.includes("--quiet"),
   json: argv.includes("--json"),
   strict: argv.includes("--strict"),
+  warningsAsErrors: argv.includes("--warnings-as-errors"),
   debug: argv.includes("--debug")
 };
 
@@ -69,6 +70,7 @@ const cli = cac("forgeui");
 cli.option("--quiet", "Suppress non-essential output");
 cli.option("--json", "Output machine-readable JSON (where supported)");
 cli.option("--strict", "Treat warnings as errors (non-zero exit)");
+cli.option("--warnings-as-errors", "Exit non-zero if validation warnings exist (CI-friendly)");
 cli.option("--debug", "Print stack traces for errors");
 cli.option("--outDir <dir>", "Override output directory (instead of config outDir)");
 
@@ -110,7 +112,7 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   }
   const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
   const validation = validateTokensDoc(doc, cfg);
-  if (GLOBAL.strict && validation.warnings.length) {
+  if ((GLOBAL.strict || GLOBAL.warningsAsErrors) && validation.warnings.length) {
     const first = validation.warnings[0];
     throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
   }
@@ -365,7 +367,7 @@ cli
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
-    if (GLOBAL.strict && validation.warnings.length) {
+    if ((GLOBAL.strict || GLOBAL.warningsAsErrors) && validation.warnings.length) {
       const first = validation.warnings[0];
       throw new Error(`Strict mode: ${validation.warnings.length} warning(s). First: ${first.code}: ${first.message}`);
     }
