@@ -55,7 +55,36 @@ function extractTokensStudioFromNodePayload(node: any): any | null {
   return null;
 }
 
-export async function figmaPull(params: FigmaPullParams): Promise<void> {
+type FigmaPullResult = {
+  written: boolean;
+  etag?: string | null;
+  cacheKey?: string;
+};
+
+function cacheFilePath(cwd: string): string {
+  return path.join(cwd, ".forgeui", "figma.pull.cache.json");
+}
+
+function readCache(cwd: string): Record<string, { etag?: string }> {
+  const p = cacheFilePath(cwd);
+  try {
+    if (!fs.existsSync(p)) return {};
+    const raw = fs.readFileSync(p, "utf8");
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed;
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCache(cwd: string, cache: Record<string, { etag?: string }>) {
+  const p = cacheFilePath(cwd);
+  ensureDir(path.dirname(p));
+  fs.writeFileSync(p, JSON.stringify(cache, null, 2) + "\n", "utf8");
+}
+
+export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResult> {
   const url = params.url ?? process.env.FIGMA_TOKENS_URL;
   const token = params.token ?? process.env.FIGMA_TOKEN;
   const fileKey = params.fileKey ?? process.env.FIGMA_FILE_KEY;
@@ -63,16 +92,33 @@ export async function figmaPull(params: FigmaPullParams): Promise<void> {
 
   let json: any;
 
+  const cwd = process.cwd();
+  const cache = readCache(cwd);
+
   if (url) {
+    const cacheKey = `url:${url}`;
+    const etag = cache[cacheKey]?.etag;
+
     const res = await fetch(url, {
       headers: {
-        ...(token ? { "X-Figma-Token": token } : {})
+        ...(token ? { "X-Figma-Token": token } : {}),
+        ...(etag ? { "If-None-Match": etag } : {})
       }
     });
+
+    if (res.status === 304) {
+      return { written: false, etag, cacheKey };
+    }
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       throw new Error(`Failed to fetch tokens (HTTP ${res.status}). ${body ? `Body: ${body.slice(0, 200)}` : ""}`);
+    }
+
+    const nextEtag = res.headers.get("etag");
+    if (nextEtag) {
+      cache[cacheKey] = { etag: nextEtag };
+      writeCache(cwd, cache);
     }
 
     json = await res.json();
@@ -91,15 +137,29 @@ export async function figmaPull(params: FigmaPullParams): Promise<void> {
     }
 
     const apiUrl = `https://api.figma.com/v1/files/${encodeURIComponent(fileKey)}/nodes?ids=${encodeURIComponent(nodeId)}`;
+    const cacheKey = `node:${fileKey}:${nodeId}`;
+    const etag = cache[cacheKey]?.etag;
+
     const res = await fetch(apiUrl, {
       headers: {
-        "X-Figma-Token": token
+        "X-Figma-Token": token,
+        ...(etag ? { "If-None-Match": etag } : {})
       }
     });
+
+    if (res.status === 304) {
+      return { written: false, etag, cacheKey };
+    }
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       throw new Error(`Failed to fetch Figma node (HTTP ${res.status}). ${body ? `Body: ${body.slice(0, 200)}` : ""}`);
+    }
+
+    const nextEtag = res.headers.get("etag");
+    if (nextEtag) {
+      cache[cacheKey] = { etag: nextEtag };
+      writeCache(cwd, cache);
     }
 
     const payload = await res.json();
@@ -138,4 +198,5 @@ export async function figmaPull(params: FigmaPullParams): Promise<void> {
   const outAbs = path.resolve(process.cwd(), params.outFile);
   ensureDir(path.dirname(outAbs));
   fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+  return { written: true };
 }

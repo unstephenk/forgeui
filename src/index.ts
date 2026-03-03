@@ -304,10 +304,14 @@ cli
     const cfg = await loadConfig(cfgPath);
 
     const outFile = opts.out ?? cfg.tokensPath;
-    await figmaPull({ outFile, url: opts.url, fileKey: opts.fileKey, nodeId: opts.nodeId, token: opts.token });
+    const res = await figmaPull({ outFile, url: opts.url, fileKey: opts.fileKey, nodeId: opts.nodeId, token: opts.token });
 
-    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written: [outFile] }, null, 2) + "\n");
-    else log(`Wrote ${outFile}`);
+    if (GLOBAL.json) {
+      process.stdout.write(JSON.stringify({ ok: true, written: res.written ? [outFile] : [], unchanged: !res.written }, null, 2) + "\n");
+    } else {
+      if (res.written) log(`Wrote ${outFile}`);
+      else log("No changes (cached). ");
+    }
   });
 
 cli
