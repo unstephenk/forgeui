@@ -3,7 +3,7 @@
 ForgeUI is a CLI that turns **Tokens Studio exports** into **CSS variables** and a **Tailwind preset**.
 
 - Source repo: https://github.com/unstephenk/forgeui
-- Getting started: see the repo `docs/GETTING_STARTED.md`
+- Getting started: [/getting-started](/getting-started)
 - Troubleshooting: [/troubleshooting](/troubleshooting)
 
 ## Mission
