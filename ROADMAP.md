@@ -52,8 +52,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Tailwind**: add v3 mode golden tests for themeFile split output.
-2. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+1. **CLI**: allow `forgeui docs --md` to pick group ordering options.
+2. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
 3. **CLI**: allow `forgeui docs --md` to pick group ordering options.
 4. **Figma pull**: add a `--no-fetch` mode to force using cached snapshots (nice offline story).
 5. **CLI**: add `--warnings-as-errors` to other commands (docs/sync/watch) for CI usage.
