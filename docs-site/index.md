@@ -4,6 +4,7 @@ ForgeUI is a CLI that turns **Tokens Studio exports** into **CSS variables** and
 
 - Source repo: https://github.com/unstephenk/forgeui
 - Getting started: see the repo `docs/GETTING_STARTED.md`
+- Troubleshooting: [/troubleshooting](/troubleshooting)
 
 ## Mission
 Make design-system tokens boringly reliable—one source of truth, deterministic outputs, and zero hand-edited drift.
