@@ -48,6 +48,8 @@ Getting started: see `docs/GETTING_STARTED.md`.
 
 Recipes: see `docs/RECIPES.md`.
 
+Releasing: see `docs/RELEASING.md`.
+
 Roadmap: see `ROADMAP.md`.
 
 ## Next up (features / improvements)
