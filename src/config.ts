@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import jitiFactory from "jiti";
+import Ajv from "ajv/dist/2020";
 import type { ForgeUIConfig } from "./types.js";
+import { CONFIG_SCHEMA } from "./schema.js";
 
 export const DEFAULT_CONFIG_FILES = [
   "forgeui.config.ts",
@@ -102,6 +104,25 @@ export function unwrapConfigModule(mod: any): ForgeUIConfig {
   return cur as ForgeUIConfig;
 }
 
+let _validateConfig: ReturnType<Ajv["compile"]> | null = null;
+function validateConfigOrThrow(cfg: unknown): asserts cfg is ForgeUIConfig {
+  if (!_validateConfig) {
+    const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
+    _validateConfig = ajv.compile(CONFIG_SCHEMA as any);
+  }
+
+  const ok = _validateConfig(cfg);
+  if (ok) return;
+
+  const errs = (_validateConfig.errors ?? []).map((e: any) => {
+    const where = e.instancePath || e.schemaPath || "(unknown)";
+    const msg = e.message ? `: ${e.message}` : "";
+    return `- ${where}${msg}`;
+  });
+
+  throw new Error(`Invalid forgeui config.\n${errs.join("\n")}`);
+}
+
 export async function loadConfig(configPath?: string): Promise<ForgeUIConfig> {
   const chosen = resolveConfigPath(configPath);
   const abs = path.resolve(process.cwd(), chosen);
@@ -110,5 +131,7 @@ export async function loadConfig(configPath?: string): Promise<ForgeUIConfig> {
   }
   const jiti = jitiFactory(process.cwd(), { interopDefault: true });
   const mod = jiti(abs);
-  return unwrapConfigModule(mod);
+  const cfg = unwrapConfigModule(mod);
+  validateConfigOrThrow(cfg);
+  return cfg;
 }

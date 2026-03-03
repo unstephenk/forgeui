@@ -33,17 +33,18 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - CLI: add --debug to print stacks for errors
 - Validate: warn on tokens with missing $value
 - Tailwind: add Tailwind v3 preset output golden tests
+- Validation: schema-check config at runtime (Ajv)
 
 ## Next (keep >= 10)
-1. **Validation**: schema-check config at runtime (helpful errors).
-2. **Docs site**: add proper dark mode + theme switcher polish.
-3. **Figma pull**: add pagination/caching (ETag) for large files.
-4. **Docs**: document token normalization options (px/rem conversion).
-5. **Plugins**: add a "prettier" example plugin + docs on option validation.
-6. **Docs site**: auto-generate namespace pages from tokens.index.json.
-7. **Docs site**: add namespace filters to search.
-8. **Plugins**: add hook coverage tests + example plugin that mutates outputs.
-9. **Figma pull**: handle 429 rate limits (Retry-After) gracefully.
-10. **Release**: improve helper (preflight checks + dry-run + clearer output).
-11. **Docs site**: add a CI job that builds Pages output on PRs.
-12. **Docs**: polish tokens.md output (group sections + anchors).
+1. **Docs site**: add proper dark mode + theme switcher polish.
+2. **Figma pull**: add pagination/caching (ETag) for large files.
+3. **Docs**: document token normalization options (px/rem conversion).
+4. **Plugins**: add a "prettier" example plugin + docs on option validation.
+5. **Docs site**: auto-generate namespace pages from tokens.index.json.
+6. **Docs site**: add namespace filters to search.
+7. **Plugins**: add hook coverage tests + example plugin that mutates outputs.
+8. **Figma pull**: handle 429 rate limits (Retry-After) gracefully.
+9. **Release**: improve helper (preflight checks + dry-run + clearer output).
+10. **Docs site**: add a CI job that builds Pages output on PRs.
+11. **Docs**: polish tokens.md output (group sections + anchors).
+12. **Validate**: unsupported leaf reporting w/ JSON paths.

@@ -11,6 +11,18 @@ export const CONFIG_SCHEMA = {
   properties: {
     tokensPath: { type: "string" },
     outDir: { type: "string" },
+    plugins: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          module: { type: "string" },
+          options: { type: "object", additionalProperties: true }
+        },
+        required: ["module"]
+      }
+    },
     themes: {
       type: "object",
       additionalProperties: false,
@@ -20,6 +32,13 @@ export const CONFIG_SCHEMA = {
           type: "object",
           additionalProperties: {
             anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }]
+          }
+        },
+        fallbacks: {
+          type: "object",
+          additionalProperties: {
+            type: "array",
+            items: { type: "string" }
           }
         }
       },
@@ -44,7 +63,16 @@ export const CONFIG_SCHEMA = {
       type: "object",
       additionalProperties: false,
       properties: {
-        alsoEmitClassDark: { type: "boolean" }
+        alsoEmitClassDark: { type: "boolean" },
+        dimensions: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            unit: { enum: ["preserve", "px", "rem"] },
+            remBasePx: { type: "number" },
+            precision: { type: "number" }
+          }
+        }
       }
     },
     tailwind: {
@@ -54,6 +82,8 @@ export const CONFIG_SCHEMA = {
         cssFile: { type: "string" },
         themeFile: { type: "string" },
         presetFile: { type: "string" },
+        presetFormat: { enum: ["esm", "cjs"] },
+        presetUsage: { enum: ["v4", "v3"] },
         darkThemeName: { type: "string" },
         map: {
           type: "object",
