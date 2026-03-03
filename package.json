@@ -25,6 +25,8 @@
     "dev": "tsx src/index.ts",
     "build": "npx tsup src/index.ts src/api.ts --format esm --platform node --target node20 --dts",
     "test": "npx vitest run",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
     "lint": "eslint .",
     "format": "prettier -w ."
   },
@@ -56,6 +58,7 @@
     "prettier": "^3.5.2"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.28.1",
     "@types/node": "^22.13.10",
     "prettier": "^3.5.2",
     "tsup": "^8.0.2",
