@@ -5,7 +5,10 @@ import path from "node:path";
 import { ensureDir } from "./utils.js";
 
 type FigmaPullParams = {
+  // Extracted Tokens Studio JSON output
   outFile: string;
+  // Optional: also write the raw response/payload (useful for debugging)
+  rawOutFile?: string;
   // Mode 1: direct URL to exported tokens JSON
   url?: string;
   // Mode 2: fetch a specific node and extract tokens from plugin data
@@ -151,6 +154,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
   const nodeId = params.nodeId ?? process.env.FIGMA_NODE_ID;
 
   let json: any;
+  let raw: any;
 
   const cwd = process.cwd();
   const cache = readCache(cwd);
@@ -162,9 +166,20 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     if (params.noFetch) {
       const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
+
+      raw = snap;
+      json = snap;
+
       const outAbs = path.resolve(process.cwd(), params.outFile);
       ensureDir(path.dirname(outAbs));
-      fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+      fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+
+      if (params.rawOutFile) {
+        const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
+        ensureDir(path.dirname(rawAbs));
+        fs.writeFileSync(rawAbs, JSON.stringify(raw, null, 2) + "\n", "utf8");
+      }
+
       return { written: true, fromCache: true, etag, cacheKey };
     }
 
@@ -176,16 +191,28 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
+      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      if (!snap) return { written: false, etag, cacheKey };
+
+      let wrote = false;
+
       const outAbs = path.resolve(process.cwd(), params.outFile);
       if (!fs.existsSync(outAbs)) {
-        const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
-        if (snap) {
-          ensureDir(path.dirname(outAbs));
-          fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
-          return { written: true, fromCache: true, etag, cacheKey };
+        ensureDir(path.dirname(outAbs));
+        fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+        wrote = true;
+      }
+
+      if (params.rawOutFile) {
+        const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
+        if (!fs.existsSync(rawAbs)) {
+          ensureDir(path.dirname(rawAbs));
+          fs.writeFileSync(rawAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+          wrote = true;
         }
       }
-      return { written: false, etag, cacheKey };
+
+      return wrote ? { written: true, fromCache: true, etag, cacheKey } : { written: false, etag, cacheKey };
     }
 
     if (!res.ok) {
@@ -198,8 +225,9 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
       cache[cacheKey] = { ...(cache[cacheKey] ?? {}), etag: nextEtag };
     }
 
-    json = await res.json();
-    const snapAbs = writeSnapshot(cwd, cacheKey, json);
+    raw = await res.json();
+    json = raw;
+    const snapAbs = writeSnapshot(cwd, cacheKey, raw);
     cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
     writeCache(cwd, cache);
   } else if (fileKey && nodeId) {
@@ -223,9 +251,28 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     if (params.noFetch) {
       const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
+
+      raw = snap;
+      if (raw && typeof raw === "object" && (raw.$themes || raw.$sets)) {
+        // Back-compat: older cache snapshots stored extracted Tokens Studio JSON.
+        json = raw;
+      } else {
+        const node = (raw as any)?.nodes?.[nodeId];
+        const extracted = extractTokensStudioFromNodePayload(node);
+        if (!extracted) throw new Error(`Cached snapshot for ${cacheKey} did not contain Tokens Studio data.`);
+        json = extracted;
+      }
+
       const outAbs = path.resolve(process.cwd(), params.outFile);
       ensureDir(path.dirname(outAbs));
-      fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+      fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+
+      if (params.rawOutFile) {
+        const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
+        ensureDir(path.dirname(rawAbs));
+        fs.writeFileSync(rawAbs, JSON.stringify(raw, null, 2) + "\n", "utf8");
+      }
+
       return { written: true, fromCache: true, etag, cacheKey };
     }
 
@@ -237,16 +284,36 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
+      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      if (!snap) return { written: false, etag, cacheKey };
+
+      raw = snap;
+      if (raw && typeof raw === "object" && (raw.$themes || raw.$sets)) {
+        json = raw;
+      } else {
+        const node = (raw as any)?.nodes?.[nodeId];
+        json = extractTokensStudioFromNodePayload(node);
+      }
+
+      let wrote = false;
+
       const outAbs = path.resolve(process.cwd(), params.outFile);
-      if (!fs.existsSync(outAbs)) {
-        const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
-        if (snap) {
-          ensureDir(path.dirname(outAbs));
-          fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
-          return { written: true, fromCache: true, etag, cacheKey };
+      if (!fs.existsSync(outAbs) && json) {
+        ensureDir(path.dirname(outAbs));
+        fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+        wrote = true;
+      }
+
+      if (params.rawOutFile) {
+        const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
+        if (!fs.existsSync(rawAbs)) {
+          ensureDir(path.dirname(rawAbs));
+          fs.writeFileSync(rawAbs, JSON.stringify(raw, null, 2) + "\n", "utf8");
+          wrote = true;
         }
       }
-      return { written: false, etag, cacheKey };
+
+      return wrote ? { written: true, fromCache: true, etag, cacheKey } : { written: false, etag, cacheKey };
     }
 
     if (!res.ok) {
@@ -260,6 +327,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     }
 
     const payload = await res.json();
+    raw = payload;
     const node = payload?.nodes?.[nodeId];
     const extracted = extractTokensStudioFromNodePayload(node);
 
@@ -275,7 +343,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     }
 
     json = extracted;
-    const snapAbs = writeSnapshot(cwd, cacheKey, json);
+    const snapAbs = writeSnapshot(cwd, cacheKey, raw);
     cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
     writeCache(cwd, cache);
   } else {
@@ -298,5 +366,13 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
   const outAbs = path.resolve(process.cwd(), params.outFile);
   ensureDir(path.dirname(outAbs));
   fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+
+  if (params.rawOutFile) {
+    // Prefer the raw payload if available; fall back to extracted JSON.
+    const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
+    ensureDir(path.dirname(rawAbs));
+    fs.writeFileSync(rawAbs, JSON.stringify(raw ?? json, null, 2) + "\n", "utf8");
+  }
+
   return { written: true };
 }

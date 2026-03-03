@@ -318,7 +318,8 @@ cli
 cli
   .command("figma pull", "Fetch tokens JSON and write to your tokensPath")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .option("--out <file>", "Override output file (defaults to config tokensPath)")
+  .option("--out <file>", "Override extracted output file (defaults to config tokensPath)")
+  .option("--raw <file>", "Also write the raw response/payload JSON")
   .option("--url <url>", "Override FIGMA_TOKENS_URL")
   .option("--fileKey <key>", "Figma file key (alternate mode; uses Figma REST API)")
   .option("--nodeId <id>", "Figma node id (alternate mode; uses Figma REST API)")
@@ -327,6 +328,7 @@ cli
   .action(async (opts: {
     config?: string;
     out?: string;
+    raw?: string;
     url?: string;
     fileKey?: string;
     nodeId?: string;
@@ -339,6 +341,7 @@ cli
     const outFile = opts.out ?? cfg.tokensPath;
     const res = await figmaPull({
       outFile,
+      rawOutFile: opts.raw,
       url: opts.url,
       fileKey: opts.fileKey,
       nodeId: opts.nodeId,
