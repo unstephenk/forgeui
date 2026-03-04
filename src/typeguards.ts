@@ -9,7 +9,8 @@ const TOKEN_TYPES: TokenType[] = [
   "fontSize",
   "lineHeight",
   "fontWeight",
-  "typography"
+  "typography",
+  "border"
 ];
 
 export function isTokenType(v: unknown): v is TokenType {

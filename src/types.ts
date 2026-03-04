@@ -6,7 +6,8 @@ export type TokenType =
   | "fontSize"
   | "lineHeight"
   | "fontWeight"
-  | "typography";
+  | "typography"
+  | "border";
 
 export type Theme = {
   id?: string;

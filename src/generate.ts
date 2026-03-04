@@ -276,6 +276,36 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): str
           if (fw != null) lines.push(`  ${base}-font-weight: ${String(fw)};`);
           if (ls != null) lines.push(`  ${base}-letter-spacing: ${String(ls)};`);
           if (lh != null) lines.push(`  ${base}-line-height: ${String(lh)};`);
+        } else if (t.leaf.$type === "border" && isObject(resolved)) {
+          // Expand composite border tokens into per-field CSS vars.
+          // Tokens Studio border shape is typically: { color, width, style }.
+          const base = varName;
+          const c = (resolved as any).color;
+          const w = (resolved as any).width;
+          const s = (resolved as any).style;
+
+          let colorForVar: string | null = null;
+          if (typeof c === "string") {
+            colorForVar = hexToRgbTriplet(c) ?? rgbFuncToTriplet(c) ?? hslToRgbTriplet(c) ?? c;
+          } else if (c != null) {
+            colorForVar = String(c);
+          }
+
+          const widthForVar = w != null ? normalizeDimension(w, dimOpts) : null;
+          const styleForVar = s != null ? String(s) : null;
+
+          if (colorForVar != null) lines.push(`  ${base}-color: ${colorForVar};`);
+          if (widthForVar != null) lines.push(`  ${base}-width: ${widthForVar};`);
+          if (styleForVar != null) lines.push(`  ${base}-style: ${styleForVar};`);
+
+          // Also emit the shorthand for convenience.
+          const colorForShorthand =
+            typeof colorForVar === "string" && /^\d+\s+\d+\s+\d+$/.test(colorForVar.trim())
+              ? `rgb(${colorForVar} / 1)`
+              : colorForVar ?? "transparent";
+          const widthForShorthand = widthForVar ?? "0px";
+          const styleForShorthand = styleForVar ?? "solid";
+          lines.push(`  ${base}: ${widthForShorthand} ${styleForShorthand} ${colorForShorthand};`);
         } else {
           lines.push(`  ${varName}: ${String(resolved)};`);
         }
@@ -363,6 +393,9 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const spacing: any = {};
   const borderRadius: any = {};
   const boxShadow: any = {};
+  const borderColor: any = {};
+  const borderWidth: any = {};
+  const borderStyle: any = {};
 
   // Typography can be expressed either as dedicated tokens ($type=typography)
   // or as separate tokens like `font.family.*`, `font.size.*`, etc.
@@ -416,6 +449,18 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         continue;
       }
 
+      if (t.leaf.$type === "border") {
+        const bKey = tokenPathToTailwindKey(t.path, "border");
+        if (!bKey.length) continue;
+
+        const baseVar = `--${toKebab(t.path)}`;
+        // generateTokensCss emits: --...-color as an `r g b` triplet when possible.
+        setNested(borderColor, bKey, tailwindColorValue(`${baseVar}-color`));
+        setNested(borderWidth, bKey, `var(${baseVar}-width)`);
+        setNested(borderStyle, bKey, `var(${baseVar}-style)`);
+        continue;
+      }
+
       if (t.leaf.$type === "typography") {
         const key = tokenPathToTailwindKey(t.path, "typography");
         if (!key.length) continue;
@@ -463,6 +508,9 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     spacing,
     borderRadius,
     boxShadow,
+    borderColor,
+    borderWidth,
+    borderStyle,
     fontFamily,
     fontSize,
     fontWeight,
