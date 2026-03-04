@@ -72,13 +72,13 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-2. **Docs**: document plugin authoring best practices + examples.
-3. **Docs site**: support deep links to tokens table via `?q=` (and document it).
-4. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
-5. **Docs**: add a "How it works" page (Tokens Studio → outputs pipeline).
-6. **Tokens**: add `gradient` token type mapping + tests.
-7. **Docs site**: show token count + filtered count in table footer.
-8. **Docs-site**: show "last generated" on token detail page too.
-9. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
-10. **CLI**: add `forgeui clean` to remove generated files + caches.
-11. **Plugins**: add plugin execution timing info under --debug.
+2. **Docs site**: support deep links to tokens table via `?q=` (and document it).
+3. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
+4. **Tokens**: add `gradient` token type mapping + tests.
+5. **Docs site**: show token count + filtered count in table footer.
+6. **Docs-site**: show "last generated" on token detail page too.
+7. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
+8. **CLI**: add `forgeui clean` to remove generated files + caches.
+9. **Plugins**: add plugin execution timing info under --debug.
+10. **Docs**: add a full "Config reference" page.
+11. **Tokens**: add more mapping tests for real-world exports.

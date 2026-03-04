@@ -145,5 +145,11 @@ npx forgeui diff
 ## Plugins
 See `docs/PLUGINS.md`.
 
+## How it works
+See `docs/HOW_IT_WORKS.md`.
+
+## Plugin authoring
+See `docs/PLUGIN_AUTHORING.md`.
+
 ## Troubleshooting
 See `docs/TROUBLESHOOTING.md`.
