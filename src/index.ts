@@ -570,6 +570,58 @@ cli
   });
 
 cli
+  .command("clean", "Remove generated files (outDir) and local caches")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .option("--dry-run", "Show what would be removed, but do not delete")
+  .option("--no-cache", "Do not remove the ./.forgeui cache directory")
+  .action(async (opts: { config?: string; dryRun?: boolean; cache?: boolean }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+    const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
+
+    const candidates = [
+      outPath({ ...cfg, outDir }, cfg.tailwind.cssFile),
+      outPath({ ...cfg, outDir }, cfg.tailwind.presetFile),
+      ...(cfg.tailwind.themeFile ? [outPath({ ...cfg, outDir }, cfg.tailwind.themeFile)] : []),
+      outPath({ ...cfg, outDir }, "forgeui.lock.json"),
+      outPath({ ...cfg, outDir }, "forgeui.manifest.json"),
+      outPath({ ...cfg, outDir }, "tokens.index.json"),
+      outPath({ ...cfg, outDir }, "tokens.md"),
+    ];
+
+    const removed: string[] = [];
+
+    for (const abs of candidates) {
+      if (!fs.existsSync(abs)) continue;
+      removed.push(path.relative(process.cwd(), abs));
+      if (!opts.dryRun) fs.rmSync(abs);
+    }
+
+    const cacheDirAbs = path.resolve(process.cwd(), ".forgeui");
+    const shouldRemoveCache = opts.cache !== false;
+    if (shouldRemoveCache && fs.existsSync(cacheDirAbs)) {
+      removed.push(path.relative(process.cwd(), cacheDirAbs) || ".forgeui");
+      if (!opts.dryRun) fs.rmSync(cacheDirAbs, { recursive: true, force: true });
+    }
+
+    // Try to remove outDir if it is now empty.
+    const outAbs = path.resolve(process.cwd(), outDir);
+    if (fs.existsSync(outAbs) && fs.statSync(outAbs).isDirectory()) {
+      const entries = fs.readdirSync(outAbs);
+      if (entries.length === 0) {
+        removed.push(path.relative(process.cwd(), outAbs));
+        if (!opts.dryRun) fs.rmdirSync(outAbs);
+      }
+    }
+
+    if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, removed }, null, 2) + "\n");
+    else {
+      if (!removed.length) log("Nothing to clean.");
+      else for (const p of removed) log(`${opts.dryRun ? "Would remove" : "Removed"} ${p}`);
+    }
+  });
+
+cli
   .command("schema", "Write forgeui config JSON schema (for editor IntelliSense)")
   .action(async () => {
     const schema = asConfigSchema();
