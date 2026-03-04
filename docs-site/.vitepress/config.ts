@@ -21,6 +21,7 @@ export default defineConfig({
           { text: 'Components', link: '/tokens-components' },
           { text: 'Namespaces', link: '/namespaces/' },
           { text: 'Types', link: '/types/' },
+          { text: 'Deep links', link: '/deep-links' },
         ],
       },
     ],

@@ -8,7 +8,13 @@
       <a v-if="ns !== 'components'" href="tokens-components">Components</a>
       <strong v-else>Components</strong>
 
-      <input ref="searchEl" class="tok-input" v-model="q" placeholder="Search…" />
+      <input
+        ref="searchEl"
+        class="tok-input"
+        v-model="q"
+        placeholder="Search…"
+        @input="setUrlParam('q', q)"
+      />
     </div>
 
     <div v-if="loading">Loading…</div>
@@ -34,6 +40,10 @@
         >
           {{ n }}
         </a>
+      </div>
+
+      <div class="tok-footer">
+        <small>Showing <code>{{ filtered.length }}</code> / <code>{{ totalCount }}</code> tokens</small>
       </div>
 
       <table>
@@ -105,6 +115,16 @@ const namespaces = computed(() => {
   return Array.from(set).sort()
 })
 
+const totalCount = computed(() => {
+  // total rows for this page (after ns prop filter + type filter)
+  return (data.value?.tokens ?? []).filter((t) => {
+    const n = String(t.token).split('.')[0] || 'other'
+    if (ns && n !== ns) return false
+    if (typeFilter.value && String(t.type) !== typeFilter.value) return false
+    return true
+  }).length
+})
+
 const filtered = computed(() => {
   const tokens = (data.value?.tokens ?? []).filter((t) => {
     const n = String(t.token).split('.')[0] || 'other'
@@ -122,8 +142,20 @@ const filtered = computed(() => {
   return tokens
 })
 
+function setUrlParam(k: string, v: string) {
+  try {
+    const u = new URL(location.href)
+    if (v) u.searchParams.set(k, v)
+    else u.searchParams.delete(k)
+    history.replaceState({}, '', u)
+  } catch {
+    // ignore
+  }
+}
+
 function toggleNs(n: string) {
   nsFilter.value = nsFilter.value === n ? '' : n
+  setUrlParam('ns', nsFilter.value)
 }
 
 async function copy(text: any) {
@@ -150,8 +182,14 @@ function onKeyDown(e: KeyboardEvent) {
 
   // Escape clears search + namespace filter
   if (e.key === 'Escape' && !isTyping) {
-    if (q.value) q.value = ''
-    if (nsFilter.value) nsFilter.value = ''
+    if (q.value) {
+      q.value = ''
+      setUrlParam('q', '')
+    }
+    if (nsFilter.value) {
+      nsFilter.value = ''
+      setUrlParam('ns', '')
+    }
     return
   }
 
@@ -180,7 +218,9 @@ onMounted(async () => {
   try {
     const u = new URL(location.href)
     const initialQ = u.searchParams.get('q') || u.searchParams.get('token') || u.searchParams.get('t') || ''
+    const initialNs = u.searchParams.get('ns') || ''
     if (initialQ) q.value = initialQ
+    if (!ns && initialNs) nsFilter.value = initialNs
   } catch {
     // ignore
   }
