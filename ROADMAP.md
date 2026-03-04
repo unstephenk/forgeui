@@ -82,6 +82,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - CLI: `forgeui diff/check` now include theme + manifest/lockfile diffs
 - CLI: `forgeui doctor` can show active filter overrides (types/sets/include/exclude)
 - docs: tokens.index.json now includes indexed sets + theme list metadata
+- docs-site: tokens table shows indexed sets + themes metadata
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).

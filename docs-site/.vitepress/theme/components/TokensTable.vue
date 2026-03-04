@@ -26,6 +26,8 @@
           Keyboard: <code>/</code> focus search, <code>j</code>/<code>k</code> move, <code>Enter</code> open, <code>Esc</code> clear.
           · Table: horizontal scroll (trackpad or <code>Shift</code>+wheel)
           <span v-if="data?.generatedAt"> · Data: <code>{{ data.generatedAt }}</code></span>
+          <span v-if="data?.themes?.length"> · Themes: <code>{{ data.themes.join(', ') }}</code></span>
+          <span v-if="data?.indexedSets?.length"> · Indexed sets: <code>{{ data.indexedSets.join(', ') }}</code></span>
         </small>
       </p>
 
@@ -89,7 +91,7 @@ import { withBase } from 'vitepress'
 
 type Entry = { token: string; type: string; cssVar: string; themes?: Record<string, any> }
 
-type TokenIndex = { generatedAt?: string; tokens: Entry[] }
+type TokenIndex = { generatedAt?: string; themes?: string[]; indexedSets?: string[]; tokens: Entry[] }
 
 const props = defineProps<{ ns?: '' | 'core' | 'components'; type?: string }>()
 const ns = props.ns ?? ''
