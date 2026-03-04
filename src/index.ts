@@ -808,9 +808,17 @@ cli
 cli
   .command("doctor", "Print environment + config summary")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+
+    applyTypesOverride(cfg, opts.types);
+    applySetsOverride(cfg, opts.sets);
+    applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
 
     const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
@@ -834,6 +842,12 @@ cli
         path: outDir,
         abs: path.resolve(process.cwd(), outDir)
       },
+      filter: {
+        types: cfg.filter?.types ?? null,
+        sets: cfg.filter?.sets ?? null,
+        include: cfg.filter?.include ?? null,
+        exclude: cfg.filter?.exclude ?? null
+      },
       plugins: (cfg.plugins ?? []).map((p) => ({ name: p.name ?? null, module: p.module, enabled: p.enabled !== false })),
       figmaEnv: {
         FIGMA_TOKENS_URL: Boolean(process.env.FIGMA_TOKENS_URL),
@@ -855,6 +869,14 @@ cli
       log(`Config: ${info.config.path}`);
       log(`Tokens: ${info.tokens.path} (${info.tokens.exists ? "found" : "missing"})`);
       log(`OutDir: ${outDir}`);
+      const f = info.filter;
+      if (f.types || f.sets || f.include || f.exclude) {
+        log("Filter:");
+        if (f.types) log(`- types: ${f.types.join(", ")}`);
+        if (f.sets) log(`- sets: ${f.sets.join(", ")}`);
+        if (f.include) log(`- include: ${f.include.join(", ")}`);
+        if (f.exclude) log(`- exclude: ${f.exclude.join(", ")}`);
+      }
       if (info.plugins.length) {
         log(`Plugins:`);
         for (const p of info.plugins) log(`- ${p.enabled ? "on" : "off"} ${p.module}${p.name ? ` (${p.name})` : ""}`);
