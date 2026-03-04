@@ -658,7 +658,8 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--dry-run", "Show what would be removed, but do not delete")
   .option("--no-cache", "Do not remove the ./.forgeui cache directory")
-  .action(async (opts: { config?: string; dryRun?: boolean; cache?: boolean }) => {
+  .option("--keep-cache", "Alias for --no-cache", { default: false })
+  .action(async (opts: { config?: string; dryRun?: boolean; cache?: boolean; keepCache?: boolean }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
     const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
@@ -682,7 +683,7 @@ cli
     }
 
     const cacheDirAbs = path.resolve(process.cwd(), ".forgeui");
-    const shouldRemoveCache = opts.cache !== false;
+    const shouldRemoveCache = opts.keepCache ? false : opts.cache !== false;
     if (shouldRemoveCache && fs.existsSync(cacheDirAbs)) {
       removed.push(path.relative(process.cwd(), cacheDirAbs) || ".forgeui");
       if (!opts.dryRun) fs.rmSync(cacheDirAbs, { recursive: true, force: true });
