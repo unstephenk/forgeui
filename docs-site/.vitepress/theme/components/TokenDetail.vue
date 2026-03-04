@@ -10,6 +10,7 @@
         <span class="tok-badge">{{ ns }}</span>
         <h1 style="margin: 0; font-size: 20px;"><code>{{ entry.token }}</code></h1>
         <button class="tok-copy" @click="copy(entry.token)">Copy token</button>
+        <button class="tok-copy" @click="copy(copyPath)">Copy path</button>
         <button class="tok-copy" @click="copyJson(entry)">Copy JSON</button>
       </div>
 
@@ -62,6 +63,12 @@ const tokenParam = computed(() => {
 })
 
 const ns = computed(() => String(entry.value?.token ?? '').split('.')[0] || 'other')
+
+const copyPath = computed(() => {
+  const t = entry.value?.token
+  if (!t) return ''
+  return `${withBase('/token')}?token=${encodeURIComponent(String(t))}`
+})
 
 async function copy(text: any) {
   try {

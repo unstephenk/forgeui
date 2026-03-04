@@ -39,6 +39,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - plugins: add hook coverage tests + example plugin that mutates outputs
 - Plugins: builtin plugin registry (short names like `banner`, no module paths)
 - docs-site: token detail page "Copy JSON" action
+- docs-site: token detail page "Copy path" action
 - CLI: add `forgeui check` (schema+validate+diff)
 - figma pull: support writing multiple outputs (extracted + raw payload)
 - docs: add Supported token types page (docs-site)
@@ -61,15 +62,14 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Docs site**: add a "copy path" button for token detail.
-2. **Docs site**: add link/button from token detail → "view in table".
-3. **Docs site**: add link/button from token detail → "view in table".
-4. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
-5. **Docs**: add a migration page for Tailwind v3 → v4 users.
-6. **Tokens**: add `border` token type mapping + tests.
-7. **Figma pull**: add a `--cache-dir` override (for CI).
-8. **Docs site**: add a small "data freshness" hint (last generated timestamp).
-9. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-10. **Docs site**: add token table: sticky header + horizontal scroll hint.
-11. **CLI**: add `forgeui fmt` for formatting generated outputs.
-12. **Docs**: document plugin authoring best practices + examples.
+1. **Docs site**: add link/button from token detail → "view in table".
+2. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
+3. **Docs**: add a migration page for Tailwind v3 → v4 users.
+4. **Tokens**: add `border` token type mapping + tests.
+5. **Figma pull**: add a `--cache-dir` override (for CI).
+6. **Docs site**: add a small "data freshness" hint (last generated timestamp).
+7. **Tokens**: add typography → `theme.extend.typography` mapping (future).
+8. **Docs site**: add token table: sticky header + horizontal scroll hint.
+9. **CLI**: add `forgeui fmt` for formatting generated outputs.
+10. **Docs**: document plugin authoring best practices + examples.
+11. **Plugins**: plugin registry improvements (better errors + list command).
