@@ -8,6 +8,22 @@ ForgeUI is a CLI that keeps your design tokens and your codebase in sync by turn
 
 **Mission:** make design-system tokens boringly reliable—one source of truth, deterministic outputs, and zero hand-edited drift.
 
+## Why ForgeUI exists
+
+Design systems usually fail from **drift**:
+- Figma tokens don’t match code
+- dark mode is inconsistent
+- Tailwind config becomes a second source of truth
+- “quick fixes” land in CSS and nobody remembers later
+
+ForgeUI fixes that by acting like a small **compiler**:
+
+**Tokens Studio (`tokens.json`) → generated artifacts → consumers**
+- Generated artifacts: `forgeui/tokens.css`, `forgeui/forgeui.preset.*`, lock/manifest, diffs
+- Consumers: apps, component libs, Storybook (anything that can load CSS + Tailwind)
+
+AI-driven component/story generation is optional later; v0 is about making tokens **boringly reliable**.
+
 ## Install (dev)
 
 ```bash
