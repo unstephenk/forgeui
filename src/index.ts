@@ -92,7 +92,15 @@ cli
     log("Created ./forgeui/");
   });
 
-async function runSync(params?: { config?: string; write?: boolean; outDir?: string }): Promise<{
+function parseCsvList(v?: string): string[] | undefined {
+  if (v == null) return undefined;
+  return String(v)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string }): Promise<{
   cfgPath: string;
   tokensAbs: string;
   cssPath: string;
@@ -105,6 +113,9 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   const cfgPath = resolveConfigPath(params?.config);
   const cfg = await loadConfig(cfgPath);
   if (params?.outDir) cfg.outDir = params.outDir;
+
+  const typesOverride = parseCsvList(params?.types);
+  if (typesOverride) cfg.filter.types = typesOverride;
 
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   if (!fs.existsSync(tokensAbs)) {
@@ -253,24 +264,30 @@ cli
   .command("sync", "Generate tokens.css + Tailwind preset from Tokens Studio export")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--dry-run", "Do not write files; compute outputs only")
-  .action(async (opts: { config?: string; dryRun?: boolean }) => {
-    await runSync({ config: opts.config, write: !opts.dryRun, outDir: ((cli as any).opts?.() ?? {}).outDir });
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; dryRun?: boolean; types?: string }) => {
+    await runSync({ config: opts.config, write: !opts.dryRun, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types });
   });
 
 cli
   .command("watch", "Watch tokens file and re-run sync")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; types?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+
+    const typesOverride = parseCsvList(opts.types);
+    if (typesOverride) cfg.filter.types = typesOverride;
+
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
-    await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir });
+    await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
     w.on("all", async () => {
       try {
-        await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir });
+        await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types });
       } catch (e) {
         console.error(e);
       }
@@ -280,8 +297,9 @@ cli
 cli
   .command("diff", "Show what would change (tokens.css + preset + lock/manifest)")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
-    const res = await runSync({ config: opts.config, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir });
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; types?: string }) => {
+    const res = await runSync({ config: opts.config, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types });
 
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
@@ -364,9 +382,13 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--md", "Also write a markdown table (tokens.md)")
   .option("--group-order <list>", "Comma-separated namespace order for tokens.md (e.g. core,components)")
-  .action(async (opts: { config?: string; md?: boolean; groupOrder?: string }) => {
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; md?: boolean; groupOrder?: string; types?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+
+    const typesOverride = parseCsvList(opts.types);
+    if (typesOverride) cfg.filter.types = typesOverride;
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
@@ -410,7 +432,8 @@ cli
 cli
   .command("check", "Run schema+validate+diff (CI-friendly)")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; types?: string }) => {
     // 1) schema: ensure checked-in schema matches current runtime schema
     const schemaOut = path.resolve(process.cwd(), "forgeui.config.schema.json");
     const nextSchema = JSON.stringify(asConfigSchema(), null, 2) + "\n";
@@ -420,13 +443,17 @@ cli
     // 2) validate: tokens warnings
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+
+    const typesOverride = parseCsvList(opts.types);
+    if (typesOverride) cfg.filter.types = typesOverride;
+
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
     const warningsOk = validation.warnings.length === 0;
 
     // 3) diff: generated outputs match what is on disk
-    const res = await runSync({ config: cfgPath, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir });
+    const res = await runSync({ config: cfgPath, write: false, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types });
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
     const cssD = diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) });
@@ -528,9 +555,13 @@ cli
 cli
   .command("validate", "Validate tokens.json and print warnings")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
-  .action(async (opts: { config?: string }) => {
+  .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
+  .action(async (opts: { config?: string; types?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+
+    const typesOverride = parseCsvList(opts.types);
+    if (typesOverride) cfg.filter.types = typesOverride;
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
