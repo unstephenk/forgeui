@@ -47,6 +47,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - tokens: add `border` token type mapping (CSS vars + Tailwind preset)
 - figma pull: support `--cache-dir` override (cache location control)
 - docs-site: show data freshness (generatedAt) hint on token table
+- docs-site: show data freshness (generatedAt) on token detail page
 - docs-site: token table sticky header + horizontal scroll hint
 - CLI: add `forgeui fmt` to format generated outputs (prettier)
 - plugins: improve registry DX (builtin list + better load error hints)
@@ -76,9 +77,9 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 2. **Docs site**: support deep links to tokens table via `?q=` (and document it).
 3. **Tokens**: add `gradient` token type mapping + tests.
 4. **Docs site**: show token count + filtered count in table footer.
-5. **Docs-site**: show "last generated" on token detail page too.
-6. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
-7. **CLI**: add `forgeui clean` to remove generated files + caches.
-8. **Plugins**: add plugin execution timing info under --debug.
-9. **Docs**: add a full "Config reference" page.
-10. **Tokens**: add more mapping tests for real-world exports.
+5. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
+6. **CLI**: add `forgeui clean` to remove generated files + caches.
+7. **Plugins**: add plugin execution timing info under --debug.
+8. **Docs**: add a full "Config reference" page.
+9. **Tokens**: add more mapping tests for real-world exports.
+10. **Docs site**: show which sets were indexed (and which were filtered).

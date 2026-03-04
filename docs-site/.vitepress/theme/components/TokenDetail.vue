@@ -16,6 +16,7 @@
       </div>
 
       <p class="tok-meta"><small>Type: <code>{{ entry.type }}</code></small></p>
+      <p v-if="generatedAt" class="tok-meta"><small>Last generated: <code>{{ generatedAt }}</code></small></p>
 
       <div class="tok-row">
         <span class="tok-meta"><small>CSS var:</small></span>
@@ -57,6 +58,7 @@ type Entry = { token: string; type: string; cssVar: string; themes?: Record<stri
 const loading = ref(true)
 const error = ref('')
 const entry = ref<Entry | null>(null)
+const generatedAt = ref<string>('')
 
 const tokenParam = computed(() => {
   const u = new URL(location.href)
@@ -103,6 +105,7 @@ onMounted(async () => {
     }
     const res = await fetch(withBase('/tokens.index.json'))
     const data = await res.json()
+    generatedAt.value = String(data.generatedAt || '')
     entry.value = (data.tokens ?? []).find((t: any) => String(t.token) === String(tokenParam.value)) || null
     if (!entry.value) error.value = `Not found: ${tokenParam.value}`
   } catch (e: any) {
