@@ -46,6 +46,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - CLI: add `--include/--exclude` shorthand flags for filter globs
 - CLI: add `forgeui clean` to remove generated files + caches
 - plugins: add plugin execution timing info under --debug
+- docs: add a full "Config reference" page (docs-site)
 - docs: add Tailwind v3 → v4 migration page (docs-site)
 - tokens: add `border` token type mapping (CSS vars + Tailwind preset)
 - figma pull: support `--cache-dir` override (cache location control)
@@ -80,9 +81,9 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 2. **Docs site**: support deep links to tokens table via `?q=` (and document it).
 3. **Tokens**: add `gradient` token type mapping + tests.
 4. **Docs site**: show token count + filtered count in table footer.
-5. **Docs**: add a full "Config reference" page.
-6. **Tokens**: add more mapping tests for real-world exports.
-7. **Docs site**: show which sets were indexed (and which were filtered).
-8. **CLI**: allow `--theme <name>` to generate a single theme (debugging / speed).
-9. **Docs site**: support client-side token type filter chips on token detail page.
-10. **CLI**: add `--format` shorthand to enable prettier formatting for outputs.
+5. **Tokens**: add more mapping tests for real-world exports.
+6. **Docs site**: show which sets were indexed (and which were filtered).
+7. **CLI**: allow `--theme <name>` to generate a single theme (debugging / speed).
+8. **Docs site**: support client-side token type filter chips on token detail page.
+9. **CLI**: add `--format` shorthand to enable prettier formatting for outputs.
+10. **Docs site**: add a visible "Docs generated at" banner on tokens pages.
