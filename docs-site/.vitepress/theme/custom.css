@@ -46,3 +46,19 @@ html.dark {
   opacity: 0.8;
   margin: 8px 0 12px;
 }
+
+.tok-chip {
+  display: inline-flex;
+  margin-left: 8px;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--vp-c-divider);
+  text-decoration: none;
+}
+
+.tok-chip:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}

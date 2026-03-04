@@ -16,6 +16,12 @@
       </div>
 
       <p class="tok-meta"><small>Type: <code>{{ entry.type }}</code></small></p>
+      <p v-if="typePages.length" class="tok-meta">
+        <small>
+          Browse types:
+          <a v-for="t in typePages" :key="t" class="tok-chip" :href="withBase(`/types/${t}`)"><code>{{ t }}</code></a>
+        </small>
+      </p>
       <p v-if="generatedAt" class="tok-meta">
         <small>
           Docs generated: <time :datetime="generatedAt"><code>{{ generatedAt }}</code></time>
@@ -67,6 +73,7 @@ const entry = ref<Entry | null>(null)
 const generatedAt = ref<string>('')
 const themes = ref<string[]>([])
 const indexedSets = ref<string[]>([])
+const typePages = ref<string[]>([])
 
 const tokenParam = computed(() => {
   const u = new URL(location.href)
@@ -116,6 +123,7 @@ onMounted(async () => {
     generatedAt.value = String(data.generatedAt || '')
     themes.value = Array.isArray(data.themes) ? data.themes.map((x: any) => String(x)) : []
     indexedSets.value = Array.isArray(data.indexedSets) ? data.indexedSets.map((x: any) => String(x)) : []
+    typePages.value = Array.from(new Set((data.tokens ?? []).map((t: any) => String(t.type ?? 'unknown')))).sort()
     entry.value = (data.tokens ?? []).find((t: any) => String(t.token) === String(tokenParam.value)) || null
     if (!entry.value) error.value = `Not found: ${tokenParam.value}`
   } catch (e: any) {
