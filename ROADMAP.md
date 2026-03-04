@@ -61,8 +61,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Plugins**: ship a couple more builtin plugins (rewrite/prettier) + docs.
-2. **Docs site**: add a "copy path" button for token detail.
+1. **Docs site**: add a "copy path" button for token detail.
+2. **Docs site**: add link/button from token detail → "view in table".
 3. **Docs site**: add link/button from token detail → "view in table".
 4. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
 5. **Docs**: add a migration page for Tailwind v3 → v4 users.

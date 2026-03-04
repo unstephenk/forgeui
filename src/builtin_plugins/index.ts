@@ -1,11 +1,13 @@
 import type { ForgeUIPlugin } from "../plugins.js";
 
 import { builtinBannerPlugin } from "./banner.js";
+import { builtinPrettierPlugin } from "./prettier.js";
 
 export type BuiltinPluginFactory = () => ForgeUIPlugin;
 
 export const builtinPluginRegistry: Record<string, BuiltinPluginFactory> = {
   banner: builtinBannerPlugin,
+  prettier: builtinPrettierPlugin,
 };
 
 export function isBuiltinPluginName(name: string): boolean {
