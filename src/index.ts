@@ -15,7 +15,7 @@ async function prettierFormat(code: string, parser: "typescript" | "css" | "json
   const prettier = await import("prettier");
   return await prettier.format(code, { parser });
 }
-import { makeLock, makeManifest } from "./lock.js";
+import { makeLockFromContents, makeManifest } from "./lock.js";
 import type { TokensStudioDoc } from "./types.js";
 import { ensureDir, readJsonFile, writeFile } from "./utils.js";
 import { diffText } from "./textdiff.js";
@@ -164,6 +164,8 @@ async function runSync(params?: {
   manifestPath: string;
   css: string;
   preset: string;
+  manifestJson: string;
+  lockJson: string;
   themePath?: string;
   themeFragment?: string;
 }> {
@@ -243,6 +245,34 @@ async function runSync(params?: {
   const lockPath = outPath(cfg, "forgeui.lock.json");
   const manifestPath = outPath(cfg, "forgeui.manifest.json");
 
+  const v = getForgeuiVersion();
+  const outputFiles = [cfg.tailwind.cssFile, cfg.tailwind.presetFile];
+  if (cfg.tailwind.themeFile) outputFiles.push(cfg.tailwind.themeFile);
+  outputFiles.push("forgeui.lock.json", "forgeui.manifest.json");
+
+  const manifest = makeManifest({
+    forgeuiVersion: v,
+    cfg,
+    configFile: cfgPath,
+    tokensFile: cfg.tokensPath,
+    doc,
+    outputs: outputFiles
+  });
+  const manifestJson = JSON.stringify(manifest, null, 2) + "\n";
+
+  const lock = makeLockFromContents({
+    forgeuiVersion: v,
+    configAbs: path.resolve(process.cwd(), cfgPath),
+    tokensAbs,
+    outputs: {
+      [cfg.tailwind.cssFile]: css,
+      [cfg.tailwind.presetFile]: preset,
+      ...(cfg.tailwind.themeFile && themeFragment ? { [cfg.tailwind.themeFile]: themeFragment } : {}),
+      "forgeui.manifest.json": manifestJson
+    }
+  });
+  const lockJson = JSON.stringify(lock, null, 2) + "\n";
+
   if (params?.write !== false) {
     // print warnings (non-fatal)
     if (validation.warnings.length && !GLOBAL.json) {
@@ -265,37 +295,8 @@ async function runSync(params?: {
     writeIfChanged(cssPath, css);
     writeIfChanged(presetPath, preset);
     if (themePath && themeFragment) writeIfChanged(themePath, themeFragment);
-
-    const v = getForgeuiVersion();
-    const outputs = [cfg.tailwind.cssFile, cfg.tailwind.presetFile];
-    if (cfg.tailwind.themeFile) outputs.push(cfg.tailwind.themeFile);
-    outputs.push("forgeui.lock.json", "forgeui.manifest.json");
-
-    const manifest = makeManifest({
-      forgeuiVersion: v,
-      cfg,
-      configFile: cfgPath,
-      tokensFile: cfg.tokensPath,
-      doc,
-      outputs
-    });
-
-    // write manifest first (so lock can include its hash if desired later)
-    writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
-
-    const lock = makeLock({
-      forgeuiVersion: v,
-      configAbs: path.resolve(process.cwd(), cfgPath),
-      tokensAbs,
-      outputsAbs: {
-        [cfg.tailwind.cssFile]: cssPath,
-        [cfg.tailwind.presetFile]: presetPath,
-        ...(cfg.tailwind.themeFile && themePath ? { [cfg.tailwind.themeFile]: themePath } : {}),
-        "forgeui.manifest.json": manifestPath
-      }
-    });
-
-    writeFile(lockPath, JSON.stringify(lock, null, 2) + "\n");
+    writeIfChanged(manifestPath, manifestJson);
+    writeIfChanged(lockPath, lockJson);
 
     const writtenAbs = [cssPath, presetPath, lockPath, manifestPath];
     if (themePath) writtenAbs.splice(2, 0, themePath);
@@ -319,6 +320,8 @@ async function runSync(params?: {
     manifestPath,
     css,
     preset,
+    manifestJson,
+    lockJson,
     ...(themePath && themeFragment ? { themePath, themeFragment } : {})
   } as any;
 }
@@ -414,21 +417,52 @@ cli
       format: opts.format
     });
 
-    const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
-    const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
+    const diffs: { file: string; diff: string }[] = [];
 
-    const cssD = diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) });
-    const presetD = diffText({
-      before: existingPreset,
-      after: res.preset,
-      label: path.relative(process.cwd(), res.presetPath)
-    });
+    {
+      const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
+      const d =
+        diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.cssPath), diff: d });
+    }
 
-    const out = [cssD, presetD].filter(Boolean).join("\n");
-    const changedFiles = [
-      { file: path.relative(process.cwd(), res.cssPath), changed: !!cssD },
-      { file: path.relative(process.cwd(), res.presetPath), changed: !!presetD }
-    ].filter((x) => x.changed);
+    {
+      const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
+      const d =
+        diffText({ before: existingPreset, after: res.preset, label: path.relative(process.cwd(), res.presetPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.presetPath), diff: d });
+    }
+
+    if (res.themePath && res.themeFragment != null) {
+      const existingTheme = fs.existsSync(res.themePath) ? fs.readFileSync(res.themePath, "utf8") : "";
+      const d =
+        diffText({ before: existingTheme, after: res.themeFragment, label: path.relative(process.cwd(), res.themePath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.themePath), diff: d });
+    }
+
+    {
+      const existingManifest = fs.existsSync(res.manifestPath) ? fs.readFileSync(res.manifestPath, "utf8") : "";
+      const d =
+        diffText({
+          before: existingManifest,
+          after: res.manifestJson,
+          label: path.relative(process.cwd(), res.manifestPath)
+        }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.manifestPath), diff: d });
+    }
+
+    {
+      const existingLock = fs.existsSync(res.lockPath) ? fs.readFileSync(res.lockPath, "utf8") : "";
+      const d = diffText({ before: existingLock, after: res.lockJson, label: path.relative(process.cwd(), res.lockPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.lockPath), diff: d });
+    }
+
+    const out = diffs
+      .map((x) => x.diff)
+      .filter(Boolean)
+      .join("\n");
+
+    const changedFiles = diffs.filter((x) => !!x.diff).map((x) => x.file);
 
     if (!out) {
       if (GLOBAL.json) process.stdout.write(JSON.stringify({ changed: false, files: [] }, null, 2) + "\n");
@@ -438,7 +472,7 @@ cli
     }
 
     if (GLOBAL.json) {
-      process.stdout.write(JSON.stringify({ changed: true, files: changedFiles.map((x) => x.file) }, null, 2) + "\n");
+      process.stdout.write(JSON.stringify({ changed: true, files: changedFiles }, null, 2) + "\n");
     } else {
       process.stdout.write(out);
     }
@@ -704,11 +738,42 @@ cli
       exclude: opts.exclude,
       format: opts.format
     });
-    const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
-    const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
-    const cssD = diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) });
-    const presetD = diffText({ before: existingPreset, after: res.preset, label: path.relative(process.cwd(), res.presetPath) });
-    const diffOk = !cssD && !presetD;
+    const diffs: { file: string; diff: string }[] = [];
+
+    {
+      const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
+      const d = diffText({ before: existingCss, after: res.css, label: path.relative(process.cwd(), res.cssPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.cssPath), diff: d });
+    }
+
+    {
+      const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
+      const d = diffText({ before: existingPreset, after: res.preset, label: path.relative(process.cwd(), res.presetPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.presetPath), diff: d });
+    }
+
+    if (res.themePath && res.themeFragment != null) {
+      const existingTheme = fs.existsSync(res.themePath) ? fs.readFileSync(res.themePath, "utf8") : "";
+      const d =
+        diffText({ before: existingTheme, after: res.themeFragment, label: path.relative(process.cwd(), res.themePath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.themePath), diff: d });
+    }
+
+    {
+      const existingManifest = fs.existsSync(res.manifestPath) ? fs.readFileSync(res.manifestPath, "utf8") : "";
+      const d =
+        diffText({ before: existingManifest, after: res.manifestJson, label: path.relative(process.cwd(), res.manifestPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.manifestPath), diff: d });
+    }
+
+    {
+      const existingLock = fs.existsSync(res.lockPath) ? fs.readFileSync(res.lockPath, "utf8") : "";
+      const d = diffText({ before: existingLock, after: res.lockJson, label: path.relative(process.cwd(), res.lockPath) }) ?? "";
+      diffs.push({ file: path.relative(process.cwd(), res.lockPath), diff: d });
+    }
+
+    const changed = diffs.filter((x) => !!x.diff);
+    const diffOk = changed.length === 0;
 
     const ok = schemaOk && warningsOk && diffOk;
 
@@ -721,10 +786,7 @@ cli
             validate: { ok: warningsOk, warningCount: validation.warnings.length, warnings: validation.warnings },
             diff: {
               ok: diffOk,
-              files: [
-                ...(cssD ? [path.relative(process.cwd(), res.cssPath)] : []),
-                ...(presetD ? [path.relative(process.cwd(), res.presetPath)] : [])
-              ]
+              files: changed.map((x) => x.file)
             }
           },
           null,
@@ -735,8 +797,7 @@ cli
       if (!schemaOk) console.error(`[forgeui] Schema out of date: ${path.relative(process.cwd(), schemaOut)} (run: forgeui schema)`);
       if (!warningsOk) console.error(`[forgeui] Warnings: ${validation.warnings.length} (run: forgeui validate)`);
       if (!diffOk) {
-        if (cssD) process.stdout.write(cssD);
-        if (presetD) process.stdout.write(presetD);
+        for (const d of changed) process.stdout.write(d.diff);
       }
       if (ok) log("OK");
     }

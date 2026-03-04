@@ -87,3 +87,31 @@ export function makeLock(params: {
     outputs
   };
 }
+
+export function makeLockFromContents(params: {
+  forgeuiVersion: string;
+  configAbs: string;
+  tokensAbs: string;
+  outputs: Record<string, string>;
+}): ForgeUILock {
+  const outputs: ForgeUILock["outputs"] = {};
+  for (const [rel, content] of Object.entries(params.outputs)) {
+    const buf = Buffer.from(content, "utf8");
+    outputs[rel] = {
+      sha256: crypto.createHash("sha256").update(buf).digest("hex"),
+      bytes: buf.byteLength
+    };
+  }
+
+  return {
+    forgeuiVersion: params.forgeuiVersion,
+    createdAt: new Date().toISOString(),
+    inputs: {
+      configFile: path.basename(params.configAbs),
+      tokensFile: path.basename(params.tokensAbs),
+      configSha256: sha256OfFile(params.configAbs),
+      tokensSha256: sha256OfFile(params.tokensAbs)
+    },
+    outputs
+  };
+}
