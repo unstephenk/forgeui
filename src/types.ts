@@ -8,7 +8,8 @@ export type TokenType =
   | "lineHeight"
   | "fontWeight"
   | "typography"
-  | "border";
+  | "border"
+  | "opacity";
 
 export type Theme = {
   id?: string;

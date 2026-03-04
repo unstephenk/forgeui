@@ -194,6 +194,41 @@ function normalizeDimension(resolved: unknown, opts: NormalizeDimensionOptions):
   return String(resolved);
 }
 
+function normalizeOpacity(resolved: unknown, precision: number): string {
+  // Tailwind expects opacity values as 0..1 strings (e.g. "0.5").
+  // Tokens Studio values vary; we accept:
+  // - 0..1 numbers (already fractional)
+  // - 0..100 numbers (treated as percent)
+  // - "50%" strings
+  // - numeric strings
+  if (typeof resolved === "number") {
+    if (!Number.isFinite(resolved)) return String(resolved);
+    const n = resolved > 1 && resolved <= 100 ? resolved / 100 : resolved;
+    return formatNumber(n, precision);
+  }
+
+  if (typeof resolved === "string") {
+    const s = resolved.trim();
+    const pm = s.match(/^(-?\d+(?:\.\d+)?)%$/);
+    if (pm) {
+      const n = Number(pm[1]);
+      if (!Number.isFinite(n)) return s;
+      return formatNumber(n / 100, precision);
+    }
+
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) {
+      const n = Number(s);
+      if (!Number.isFinite(n)) return s;
+      const next = n > 1 && n <= 100 ? n / 100 : n;
+      return formatNumber(next, precision);
+    }
+
+    return s;
+  }
+
+  return String(resolved);
+}
+
 function shadowToCssValue(resolved: unknown): string {
   // Tokens Studio shadow can be an array of shadow objects.
   // We accept either:
@@ -260,6 +295,8 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig, opts
           lines.push(`  ${varName}: ${shadowToCssValue(resolved)};`);
         } else if (t.leaf.$type === "dimension") {
           lines.push(`  ${varName}: ${normalizeDimension(resolved, dimOpts)};`);
+        } else if (t.leaf.$type === "opacity") {
+          lines.push(`  ${varName}: ${normalizeOpacity(resolved, dimOpts.precision)};`);
         } else if (t.leaf.$type === "typography" && isObject(resolved)) {
           // Expand composite typography tokens into per-field CSS vars.
           const base = varName;
@@ -398,6 +435,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const borderWidth: any = {};
   const borderStyle: any = {};
   const backgroundImage: any = {};
+  const opacity: any = {};
 
   // Typography can be expressed either as dedicated tokens ($type=typography)
   // or as separate tokens like `font.family.*`, `font.size.*`, etc.
@@ -421,6 +459,14 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         keyPath = remapKeyPath(keyPath, cfg.tailwind.map?.colors);
         const vname = `--${toKebab(t.path)}`;
         setNested(colors, keyPath, tailwindColorValue(vname));
+        continue;
+      }
+
+      if (t.leaf.$type === "opacity") {
+        const oKey = tokenPathToTailwindKey(t.path, "opacity");
+        if (!oKey.length) continue;
+        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
+        setNested(opacity, oKey, normalizeOpacity(resolved, dimOpts.precision));
         continue;
       }
 
@@ -513,7 +559,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     }
   }
 
-  const theme = {
+  const theme: any = {
     colors,
     spacing,
     borderRadius,
@@ -528,6 +574,8 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     letterSpacing,
     lineHeight
   };
+
+  if (Object.keys(opacity).length) theme.opacity = opacity;
 
   const preset = {
     darkMode: ["class", "[data-theme='dark']"],
