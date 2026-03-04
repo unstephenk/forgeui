@@ -192,7 +192,9 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
     doc,
     outputs,
     warn,
-    pluginOptions: undefined
+    pluginOptions: undefined,
+    debug: GLOBAL.debug,
+    debugLog: log
   });
 
   for (const p of plugins) {
@@ -204,7 +206,9 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
     doc,
     outputs,
     warn,
-    pluginOptions: undefined
+    pluginOptions: undefined,
+    debug: GLOBAL.debug,
+    debugLog: log
   });
 
   const css = outputs[cfg.tailwind.cssFile] ?? cssRaw;

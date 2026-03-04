@@ -13,6 +13,10 @@ export type ForgeUIPluginContext = {
   outputs: Record<string, string>;
   warn?: (msg: string) => void;
   pluginOptions?: Record<string, unknown>;
+
+  // Internal: used by the CLI to print plugin timings under --debug.
+  debug?: boolean;
+  debugLog?: (msg: string) => void;
 };
 
 export type ForgeUIPlugin<TOptions extends Record<string, unknown> = Record<string, unknown>> = {
@@ -127,11 +131,17 @@ export async function runHook(
       pluginOptions: (p as any).options ?? {}
     };
 
+    const t0 = Date.now();
     try {
       await fn(ctx);
     } catch (e: any) {
       const msg = e instanceof Error ? e.message : String(e);
       throw new Error(`Plugin ${pluginLabel(p)} failed in ${hook}: ${msg}`);
+    } finally {
+      if (baseCtx.debug && typeof baseCtx.debugLog === "function") {
+        const dt = Date.now() - t0;
+        baseCtx.debugLog(`[forgeui debug] Plugin ${pluginLabel(p)} ${hook} in ${dt}ms`);
+      }
     }
   }
 }
