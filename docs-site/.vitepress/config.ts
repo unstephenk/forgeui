@@ -12,6 +12,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting started', link: '/getting-started' },
+      { text: 'Migration (v3 → v4)', link: '/migration-tailwind-v3-to-v4' },
       {
         text: 'Tokens',
         items: [
@@ -29,6 +30,7 @@ export default defineConfig({
         items: [
           { text: 'Home', link: '/' },
           { text: 'Getting started', link: '/getting-started' },
+          { text: 'Migration (v3 → v4)', link: '/migration-tailwind-v3-to-v4' },
           { text: 'All tokens', link: '/tokens' },
           { text: 'Core tokens', link: '/tokens-core' },
           { text: 'Component tokens', link: '/tokens-components' },
