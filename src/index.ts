@@ -203,6 +203,8 @@ async function runSync(params?: {
   };
   if (cfg.tailwind.themeFile && genRaw.themeFragment) outputs[cfg.tailwind.themeFile] = genRaw.themeFragment;
 
+  const pluginTimings: Array<{ plugin: string; hook: string; ms: number }> = [];
+
   const warn = (msg: string) => {
     if (!GLOBAL.json) console.warn(`[forgeui plugin warning] ${msg}`);
   };
@@ -215,7 +217,11 @@ async function runSync(params?: {
     warn,
     pluginOptions: undefined,
     debug: GLOBAL.debug,
-    debugLog: log
+    debugLog: (msg: string) => {
+      const m = msg.match(/\[forgeui debug\] Plugin (.+) (beforeGenerate|afterGenerate) in (\d+)ms/);
+      if (m) pluginTimings.push({ plugin: m[1], hook: m[2], ms: Number(m[3]) });
+      log(msg);
+    }
   });
 
   for (const p of plugins) {
@@ -229,7 +235,11 @@ async function runSync(params?: {
     warn,
     pluginOptions: undefined,
     debug: GLOBAL.debug,
-    debugLog: log
+    debugLog: (msg: string) => {
+      const m = msg.match(/\[forgeui debug\] Plugin (.+) (beforeGenerate|afterGenerate) in (\d+)ms/);
+      if (m) pluginTimings.push({ plugin: m[1], hook: m[2], ms: Number(m[3]) });
+      log(msg);
+    }
   });
 
   const css = outputs[cfg.tailwind.cssFile] ?? cssRaw;
@@ -878,7 +888,8 @@ cli
       schemaFile: {
         path: path.relative(process.cwd(), schemaAbs),
         exists: fs.existsSync(schemaAbs)
-      }
+      },
+      pluginTimings: pluginTimings.length ? pluginTimings : null
     };
 
     if (GLOBAL.json) process.stdout.write(JSON.stringify(info, null, 2) + "\n");
