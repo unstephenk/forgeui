@@ -16,7 +16,13 @@
       </div>
 
       <p class="tok-meta"><small>Type: <code>{{ entry.type }}</code></small></p>
-      <p v-if="generatedAt" class="tok-meta"><small>Last generated: <code>{{ generatedAt }}</code></small></p>
+      <p v-if="generatedAt" class="tok-meta">
+        <small>
+          Docs generated: <time :datetime="generatedAt"><code>{{ generatedAt }}</code></time>
+        </small>
+      </p>
+      <p v-if="themes.length" class="tok-meta"><small>Themes: <code>{{ themes.join(', ') }}</code></small></p>
+      <p v-if="indexedSets.length" class="tok-meta"><small>Indexed sets: <code>{{ indexedSets.join(', ') }}</code></small></p>
 
       <div class="tok-row">
         <span class="tok-meta"><small>CSS var:</small></span>
@@ -59,6 +65,8 @@ const loading = ref(true)
 const error = ref('')
 const entry = ref<Entry | null>(null)
 const generatedAt = ref<string>('')
+const themes = ref<string[]>([])
+const indexedSets = ref<string[]>([])
 
 const tokenParam = computed(() => {
   const u = new URL(location.href)
@@ -106,6 +114,8 @@ onMounted(async () => {
     const res = await fetch(withBase('/tokens.index.json'))
     const data = await res.json()
     generatedAt.value = String(data.generatedAt || '')
+    themes.value = Array.isArray(data.themes) ? data.themes.map((x: any) => String(x)) : []
+    indexedSets.value = Array.isArray(data.indexedSets) ? data.indexedSets.map((x: any) => String(x)) : []
     entry.value = (data.tokens ?? []).find((t: any) => String(t.token) === String(tokenParam.value)) || null
     if (!entry.value) error.value = `Not found: ${tokenParam.value}`
   } catch (e: any) {
