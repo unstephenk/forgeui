@@ -37,6 +37,14 @@ html.dark {
   font-size: 0.9em;
 }
 
+.tok-banner {
+  margin: 10px 0 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--vp-c-brand-soft) 35%, transparent);
+}
+
 .tok-row-selected {
   outline: 2px solid color-mix(in oklab, var(--vp-c-brand-1) 60%, transparent);
   outline-offset: -2px;

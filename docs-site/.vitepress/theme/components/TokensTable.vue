@@ -44,6 +44,11 @@
         </a>
       </div>
 
+      <div v-if="data?.generatedAt" class="tok-banner">
+        <strong>Docs generated:</strong>
+        <code>{{ data.generatedAt }}</code>
+      </div>
+
       <div class="tok-footer">
         <small>Showing <code>{{ filtered.length }}</code> / <code>{{ totalCount }}</code> tokens</small>
       </div>
