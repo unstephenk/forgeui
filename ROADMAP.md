@@ -44,6 +44,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - CLI: add `--types` shorthand for config.filter.types
 - docs: add Tailwind v3 → v4 migration page (docs-site)
 - tokens: add `border` token type mapping (CSS vars + Tailwind preset)
+- figma pull: support `--cache-dir` override (cache location control)
 - CLI: add `forgeui check` (schema+validate+diff)
 - figma pull: support writing multiple outputs (extracted + raw payload)
 - docs: add Supported token types page (docs-site)
@@ -66,14 +67,14 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Figma pull**: add a `--cache-dir` override (for CI).
-2. **Docs site**: add a small "data freshness" hint (last generated timestamp).
-3. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-4. **Docs site**: add token table: sticky header + horizontal scroll hint.
-5. **CLI**: add `forgeui fmt` for formatting generated outputs.
-6. **Docs**: document plugin authoring best practices + examples.
-7. **Plugins**: plugin registry improvements (better errors + list command).
-8. **Docs site**: support deep links to tokens table via `?q=` (and document it).
-9. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
-10. **Docs**: add a "How it works" page (Tokens Studio → outputs pipeline).
-11. **Tokens**: add `gradient` token type mapping + tests.
+1. **Docs site**: add a small "data freshness" hint (last generated timestamp).
+2. **Tokens**: add typography → `theme.extend.typography` mapping (future).
+3. **Docs site**: add token table: sticky header + horizontal scroll hint.
+4. **CLI**: add `forgeui fmt` for formatting generated outputs.
+5. **Docs**: document plugin authoring best practices + examples.
+6. **Plugins**: plugin registry improvements (better errors + list command).
+7. **Docs site**: support deep links to tokens table via `?q=` (and document it).
+8. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
+9. **Docs**: add a "How it works" page (Tokens Studio → outputs pipeline).
+10. **Tokens**: add `gradient` token type mapping + tests.
+11. **Docs site**: show token count + filtered count in table footer.

@@ -85,4 +85,43 @@ describe("figmaPull caching", () => {
       vi.restoreAllMocks();
     }
   });
+
+  it("supports overriding the cache directory", async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "forgeui-figma-"));
+    const prev = process.cwd();
+
+    try {
+      process.chdir(tmp);
+      fs.mkdirSync(path.join(tmp, "my-cache"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tmp, "my-cache", "figma.pull.cache.json"),
+        JSON.stringify({ "url:https://example.com/tokens.json": { etag: "W/\"abc\"" } }, null, 2) + "\n",
+        "utf8"
+      );
+
+      const fetchSpy = vi
+        .spyOn(globalThis, "fetch")
+        // @ts-expect-error - minimal mock
+        .mockResolvedValue({
+          status: 304,
+          ok: false,
+          headers: new Headers(),
+          json: async () => ({}),
+          text: async () => "",
+        });
+
+      const res = await figmaPull({
+        outFile: "tokens.json",
+        url: "https://example.com/tokens.json",
+        cacheDir: "my-cache",
+      });
+      expect(res.written).toBe(false);
+
+      const call = fetchSpy.mock.calls[0];
+      expect(call[1]?.headers).toMatchObject({ "If-None-Match": 'W/"abc"' });
+    } finally {
+      process.chdir(prev);
+      vi.restoreAllMocks();
+    }
+  });
 });

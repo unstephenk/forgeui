@@ -342,6 +342,7 @@ cli
   .option("--fileKey <key>", "Figma file key (alternate mode; uses Figma REST API)")
   .option("--nodeId <id>", "Figma node id (alternate mode; uses Figma REST API)")
   .option("--token <token>", "Override FIGMA_TOKEN")
+  .option("--cache-dir <dir>", "Override cache directory (defaults to ./.forgeui; useful for CI)")
   .option("--no-fetch", "Do not call network; use cached snapshot only", { default: false })
   .action(async (opts: {
     config?: string;
@@ -351,6 +352,7 @@ cli
     fileKey?: string;
     nodeId?: string;
     token?: string;
+    cacheDir?: string;
     fetch?: boolean;
   }) => {
     const cfgPath = resolveConfigPath(opts.config);
@@ -364,6 +366,7 @@ cli
       fileKey: opts.fileKey,
       nodeId: opts.nodeId,
       token: opts.token,
+      cacheDir: opts.cacheDir,
       noFetch: opts.fetch === false,
     });
 

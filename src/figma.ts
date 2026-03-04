@@ -17,6 +17,8 @@ type FigmaPullParams = {
   token?: string;
   // If true, never call the network; use cached snapshot only.
   noFetch?: boolean;
+  // Override the cache directory (defaults to <cwd>/.forgeui). Useful for CI.
+  cacheDir?: string;
 };
 
 function sleep(ms: number) {
@@ -101,12 +103,16 @@ type FigmaPullResult = {
   cacheKey?: string;
 };
 
-function cacheFilePath(cwd: string): string {
-  return path.join(cwd, ".forgeui", "figma.pull.cache.json");
+function cacheRoot(cwd: string, cacheDir?: string): string {
+  return cacheDir ? path.resolve(cwd, cacheDir) : path.join(cwd, ".forgeui");
 }
 
-function readCache(cwd: string): Record<string, { etag?: string; snapshot?: string }> {
-  const p = cacheFilePath(cwd);
+function cacheFilePath(cacheAbs: string): string {
+  return path.join(cacheAbs, "figma.pull.cache.json");
+}
+
+function readCache(cacheAbs: string): Record<string, { etag?: string; snapshot?: string }> {
+  const p = cacheFilePath(cacheAbs);
   try {
     if (!fs.existsSync(p)) return {};
     const raw = fs.readFileSync(p, "utf8");
@@ -118,26 +124,26 @@ function readCache(cwd: string): Record<string, { etag?: string; snapshot?: stri
   }
 }
 
-function writeCache(cwd: string, cache: Record<string, { etag?: string; snapshot?: string }>) {
-  const p = cacheFilePath(cwd);
+function writeCache(cacheAbs: string, cache: Record<string, { etag?: string; snapshot?: string }>) {
+  const p = cacheFilePath(cacheAbs);
   ensureDir(path.dirname(p));
   fs.writeFileSync(p, JSON.stringify(cache, null, 2) + "\n", "utf8");
 }
 
-function snapshotPathFor(cwd: string, cacheKey: string): string {
+function snapshotPathFor(cacheAbs: string, cacheKey: string): string {
   const h = crypto.createHash("sha1").update(cacheKey).digest("hex").slice(0, 12);
-  return path.join(cwd, ".forgeui", "cache", "figma", `${h}.json`);
+  return path.join(cacheAbs, "cache", "figma", `${h}.json`);
 }
 
-function writeSnapshot(cwd: string, cacheKey: string, json: any): string {
-  const abs = snapshotPathFor(cwd, cacheKey);
+function writeSnapshot(cacheAbs: string, cacheKey: string, json: any): string {
+  const abs = snapshotPathFor(cacheAbs, cacheKey);
   ensureDir(path.dirname(abs));
   fs.writeFileSync(abs, JSON.stringify(json, null, 2) + "\n", "utf8");
   return abs;
 }
 
-function tryReadSnapshot(cwd: string, cacheKey: string, hintPath?: string): any | null {
-  const abs = hintPath ? path.resolve(cwd, hintPath) : snapshotPathFor(cwd, cacheKey);
+function tryReadSnapshot(cwd: string, cacheAbs: string, cacheKey: string, hintPath?: string): any | null {
+  const abs = hintPath ? path.resolve(cwd, hintPath) : snapshotPathFor(cacheAbs, cacheKey);
   try {
     if (!fs.existsSync(abs)) return null;
     const raw = fs.readFileSync(abs, "utf8");
@@ -157,14 +163,15 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
   let raw: any;
 
   const cwd = process.cwd();
-  const cache = readCache(cwd);
+  const cacheAbs = cacheRoot(cwd, params.cacheDir);
+  const cache = readCache(cacheAbs);
 
   if (url) {
     const cacheKey = `url:${url}`;
     const etag = cache[cacheKey]?.etag;
 
     if (params.noFetch) {
-      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      const snap = tryReadSnapshot(cwd, cacheAbs, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
 
       raw = snap;
@@ -191,7 +198,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
-      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      const snap = tryReadSnapshot(cwd, cacheAbs, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) return { written: false, etag, cacheKey };
 
       let wrote = false;
@@ -227,9 +234,9 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
 
     raw = await res.json();
     json = raw;
-    const snapAbs = writeSnapshot(cwd, cacheKey, raw);
+    const snapAbs = writeSnapshot(cacheAbs, cacheKey, raw);
     cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
-    writeCache(cwd, cache);
+    writeCache(cacheAbs, cache);
   } else if (fileKey && nodeId) {
     if (!token) {
       throw new Error(
@@ -249,7 +256,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     const etag = cache[cacheKey]?.etag;
 
     if (params.noFetch) {
-      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      const snap = tryReadSnapshot(cwd, cacheAbs, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) throw new Error(`No cached snapshot available for ${cacheKey}. Remove --no-fetch to fetch.`);
 
       raw = snap;
@@ -284,7 +291,7 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     });
 
     if (res.status === 304) {
-      const snap = tryReadSnapshot(cwd, cacheKey, cache[cacheKey]?.snapshot);
+      const snap = tryReadSnapshot(cwd, cacheAbs, cacheKey, cache[cacheKey]?.snapshot);
       if (!snap) return { written: false, etag, cacheKey };
 
       raw = snap;
@@ -343,9 +350,9 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     }
 
     json = extracted;
-    const snapAbs = writeSnapshot(cwd, cacheKey, raw);
+    const snapAbs = writeSnapshot(cacheAbs, cacheKey, raw);
     cache[cacheKey] = { ...(cache[cacheKey] ?? {}), snapshot: path.relative(cwd, snapAbs) };
-    writeCache(cwd, cache);
+    writeCache(cacheAbs, cache);
   } else {
     throw new Error(
       [
