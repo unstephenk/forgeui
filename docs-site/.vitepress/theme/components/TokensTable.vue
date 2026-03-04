@@ -18,6 +18,7 @@
       <p class="tok-hint">
         <small>
           Keyboard: <code>/</code> focus search, <code>j</code>/<code>k</code> move, <code>Enter</code> open, <code>Esc</code> clear.
+          · Table: horizontal scroll (trackpad or <code>Shift</code>+wheel)
           <span v-if="data?.generatedAt"> · Data: <code>{{ data.generatedAt }}</code></span>
         </small>
       </p>

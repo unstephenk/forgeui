@@ -19,6 +19,15 @@ html.dark {
   overflow-x: auto;
 }
 
+/* Sticky header (works inside the overflow-x scroll container). */
+.vp-doc thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--vp-c-bg);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--vp-c-divider) 70%, transparent);
+}
+
 .vp-doc th,
 .vp-doc td {
   white-space: nowrap;
