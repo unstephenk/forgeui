@@ -25,6 +25,7 @@ import { generateTokensMarkdown } from "./docsmd.js";
 import { asConfigSchema } from "./schema.js";
 import { writeTokensTemplate } from "./template.js";
 import { figmaPull } from "./figma.js";
+import { isTokenType } from "./typeguards.js";
 
 function getForgeuiVersion(): string {
   try {
@@ -100,10 +101,24 @@ cli
 
 function parseCsvList(v?: string): string[] | undefined {
   if (v == null) return undefined;
-  return String(v)
+  const out = String(v)
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  return out.length ? out : undefined;
+}
+
+function applyTypesOverride(cfg: any, typesCsv?: string) {
+  const types = parseCsvList(typesCsv);
+  if (!types) return;
+
+  const invalid = types.filter((t) => !isTokenType(t));
+  if (invalid.length) {
+    throw new Error(`Invalid --types value(s): ${invalid.join(", ")}`);
+  }
+
+  cfg.filter ??= {};
+  cfg.filter.types = types;
 }
 
 async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string }): Promise<{
@@ -120,8 +135,7 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   const cfg = await loadConfig(cfgPath);
   if (params?.outDir) cfg.outDir = params.outDir;
 
-  const typesOverride = parseCsvList(params?.types);
-  if (typesOverride) cfg.filter.types = typesOverride;
+  applyTypesOverride(cfg, params?.types);
 
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   if (!fs.existsSync(tokensAbs)) {
@@ -283,8 +297,7 @@ cli
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
-    const typesOverride = parseCsvList(opts.types);
-    if (typesOverride) cfg.filter.types = typesOverride;
+    applyTypesOverride(cfg, opts.types);
 
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
@@ -396,8 +409,8 @@ cli
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
-    const typesOverride = parseCsvList(opts.types);
-    if (typesOverride) cfg.filter.types = typesOverride;
+    applyTypesOverride(cfg, opts.types);
+
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
@@ -514,8 +527,7 @@ cli
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
-    const typesOverride = parseCsvList(opts.types);
-    if (typesOverride) cfg.filter.types = typesOverride;
+    applyTypesOverride(cfg, opts.types);
 
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
@@ -667,8 +679,8 @@ cli
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
-    const typesOverride = parseCsvList(opts.types);
-    if (typesOverride) cfg.filter.types = typesOverride;
+    applyTypesOverride(cfg, opts.types);
+
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
     const validation = validateTokensDoc(doc, cfg);
