@@ -505,6 +505,7 @@ cli
   .action(async (opts: { config?: string; md?: boolean; groupOrder?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
+    const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
 
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
@@ -519,13 +520,13 @@ cli
     }
 
     const index = generateTokenIndex(doc, cfg);
-    const outJson = outPath(cfg, "tokens.index.json");
+    const outJson = outPath({ ...cfg, outDir }, "tokens.index.json");
     writeFile(outJson, JSON.stringify(index, null, 2) + "\n");
 
     const written: string[] = [path.relative(process.cwd(), outJson)];
 
     if (opts.md) {
-      const outMd = outPath(cfg, "tokens.md");
+      const outMd = outPath({ ...cfg, outDir }, "tokens.md");
       const order = opts.groupOrder
         ? String(opts.groupOrder)
             .split(",")

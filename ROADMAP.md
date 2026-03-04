@@ -78,6 +78,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 - CLI: `forgeui validate` now supports `--sets/--include/--exclude` overrides
 - CLI: fix broken `runSync` return type (build blocker)
+- CLI: `forgeui docs` now respects global `--outDir`
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
