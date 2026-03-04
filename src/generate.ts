@@ -229,6 +229,20 @@ function normalizeOpacity(resolved: unknown, precision: number): string {
   return String(resolved);
 }
 
+function normalizeZIndex(resolved: unknown): string {
+  if (typeof resolved === "number") {
+    if (!Number.isFinite(resolved)) return String(resolved);
+    return String(Math.trunc(resolved));
+  }
+  if (typeof resolved === "string") {
+    const s = resolved.trim();
+    if (/^-?\d+$/.test(s)) return s;
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) return String(Math.trunc(Number(s)));
+    return s;
+  }
+  return String(resolved);
+}
+
 function shadowToCssValue(resolved: unknown): string {
   // Tokens Studio shadow can be an array of shadow objects.
   // We accept either:
@@ -297,6 +311,8 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig, opts
           lines.push(`  ${varName}: ${normalizeDimension(resolved, dimOpts)};`);
         } else if (t.leaf.$type === "opacity") {
           lines.push(`  ${varName}: ${normalizeOpacity(resolved, dimOpts.precision)};`);
+        } else if (t.leaf.$type === "zIndex") {
+          lines.push(`  ${varName}: ${normalizeZIndex(resolved)};`);
         } else if (t.leaf.$type === "typography" && isObject(resolved)) {
           // Expand composite typography tokens into per-field CSS vars.
           const base = varName;
@@ -436,6 +452,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const borderStyle: any = {};
   const backgroundImage: any = {};
   const opacity: any = {};
+  const zIndex: any = {};
 
   // Typography can be expressed either as dedicated tokens ($type=typography)
   // or as separate tokens like `font.family.*`, `font.size.*`, etc.
@@ -467,6 +484,14 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         if (!oKey.length) continue;
         const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
         setNested(opacity, oKey, normalizeOpacity(resolved, dimOpts.precision));
+        continue;
+      }
+
+      if (t.leaf.$type === "zIndex") {
+        const zKey = tokenPathToTailwindKey(t.path, "zIndex");
+        if (!zKey.length) continue;
+        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
+        setNested(zIndex, zKey, normalizeZIndex(resolved));
         continue;
       }
 
@@ -576,6 +601,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   };
 
   if (Object.keys(opacity).length) theme.opacity = opacity;
+  if (Object.keys(zIndex).length) theme.zIndex = zIndex;
 
   const preset = {
     darkMode: ["class", "[data-theme='dark']"],

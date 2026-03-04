@@ -9,7 +9,8 @@ export type TokenType =
   | "fontWeight"
   | "typography"
   | "border"
-  | "opacity";
+  | "opacity"
+  | "zIndex";
 
 export type Theme = {
   id?: string;
