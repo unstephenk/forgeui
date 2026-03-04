@@ -40,6 +40,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - Plugins: builtin plugin registry (short names like `banner`, no module paths)
 - docs-site: token detail page "Copy JSON" action
 - docs-site: token detail page "Copy path" action
+- docs-site: token detail page "View in table" link
 - CLI: add `forgeui check` (schema+validate+diff)
 - figma pull: support writing multiple outputs (extracted + raw payload)
 - docs: add Supported token types page (docs-site)
@@ -62,14 +63,14 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: Tokens page now has jump links to namespace sections
 
 ## Next (keep >= 10)
-1. **Docs site**: add link/button from token detail → "view in table".
-2. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
-3. **Docs**: add a migration page for Tailwind v3 → v4 users.
-4. **Tokens**: add `border` token type mapping + tests.
-5. **Figma pull**: add a `--cache-dir` override (for CI).
-6. **Docs site**: add a small "data freshness" hint (last generated timestamp).
-7. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-8. **Docs site**: add token table: sticky header + horizontal scroll hint.
-9. **CLI**: add `forgeui fmt` for formatting generated outputs.
-10. **Docs**: document plugin authoring best practices + examples.
-11. **Plugins**: plugin registry improvements (better errors + list command).
+1. **CLI**: add `--filter.types` shorthand flags (e.g. `--types color,dimension`).
+2. **Docs**: add a migration page for Tailwind v3 → v4 users.
+3. **Tokens**: add `border` token type mapping + tests.
+4. **Figma pull**: add a `--cache-dir` override (for CI).
+5. **Docs site**: add a small "data freshness" hint (last generated timestamp).
+6. **Tokens**: add typography → `theme.extend.typography` mapping (future).
+7. **Docs site**: add token table: sticky header + horizontal scroll hint.
+8. **CLI**: add `forgeui fmt` for formatting generated outputs.
+9. **Docs**: document plugin authoring best practices + examples.
+10. **Plugins**: plugin registry improvements (better errors + list command).
+11. **Docs site**: support deep links to tokens table via `?q=` (and document it).

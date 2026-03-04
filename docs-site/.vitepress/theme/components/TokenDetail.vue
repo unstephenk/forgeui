@@ -11,6 +11,7 @@
         <h1 style="margin: 0; font-size: 20px;"><code>{{ entry.token }}</code></h1>
         <button class="tok-copy" @click="copy(entry.token)">Copy token</button>
         <button class="tok-copy" @click="copy(copyPath)">Copy path</button>
+        <a class="tok-copy" :href="viewInTableHref">View in table</a>
         <button class="tok-copy" @click="copyJson(entry)">Copy JSON</button>
       </div>
 
@@ -68,6 +69,13 @@ const copyPath = computed(() => {
   const t = entry.value?.token
   if (!t) return ''
   return `${withBase('/token')}?token=${encodeURIComponent(String(t))}`
+})
+
+const viewInTableHref = computed(() => {
+  const t = entry.value?.token
+  if (!t) return withBase('/tokens')
+  // `TokensTable` supports reading `?q=` on mount.
+  return `${withBase('/tokens')}?q=${encodeURIComponent(String(t))}`
 })
 
 async function copy(text: any) {

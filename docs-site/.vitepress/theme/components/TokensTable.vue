@@ -167,6 +167,16 @@ function onKeyDown(e: KeyboardEvent) {
 
 onMounted(async () => {
   window.addEventListener('keydown', onKeyDown)
+
+  // Support deep links like `/tokens?q=core.color.primary` from token detail.
+  try {
+    const u = new URL(location.href)
+    const initialQ = u.searchParams.get('q') || u.searchParams.get('token') || u.searchParams.get('t') || ''
+    if (initialQ) q.value = initialQ
+  } catch {
+    // ignore
+  }
+
   try {
     const res = await fetch(withBase('/tokens.index.json'))
     data.value = await res.json()
