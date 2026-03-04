@@ -129,7 +129,18 @@ function applySetsOverride(cfg: any, setsCsv?: string) {
   cfg.filter.sets = sets;
 }
 
-async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string; sets?: string }): Promise<{"}
+function applyIncludeExcludeOverride(cfg: any, params?: { include?: string; exclude?: string }) {
+  const include = parseCsvList(params?.include);
+  const exclude = parseCsvList(params?.exclude);
+
+  if (!include && !exclude) return;
+
+  cfg.filter ??= {};
+  if (include) cfg.filter.include = include;
+  if (exclude) cfg.filter.exclude = exclude;
+}
+
+async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string; sets?: string; include?: string; exclude?: string }): Promise<{"}"}
   cfgPath: string;
   tokensAbs: string;
   cssPath: string;
@@ -145,6 +156,7 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
 
   applyTypesOverride(cfg, params?.types);
   applySetsOverride(cfg, params?.sets);
+  applyIncludeExcludeOverride(cfg, { include: params?.include, exclude: params?.exclude });
 
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   if (!fs.existsSync(tokensAbs)) {
@@ -295,13 +307,17 @@ cli
   .option("--dry-run", "Do not write files; compute outputs only")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
-  .action(async (opts: { config?: string; dryRun?: boolean; types?: string; sets?: string }) => {
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; dryRun?: boolean; types?: string; sets?: string; include?: string; exclude?: string }) => {
     await runSync({
       config: opts.config,
       write: !opts.dryRun,
       outDir: ((cli as any).opts?.() ?? {}).outDir,
       types: opts.types,
-      sets: opts.sets
+      sets: opts.sets,
+      include: opts.include,
+      exclude: opts.exclude
     });
   });
 
@@ -310,21 +326,38 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
-  .action(async (opts: { config?: string; types?: string; sets?: string }) => {
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
+    applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
 
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
-    await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types, sets: opts.sets });
+    await runSync({
+      config: cfgPath,
+      outDir: ((cli as any).opts?.() ?? {}).outDir,
+      types: opts.types,
+      sets: opts.sets,
+      include: opts.include,
+      exclude: opts.exclude
+    });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
     w.on("all", async () => {
       try {
-        await runSync({ config: cfgPath, outDir: ((cli as any).opts?.() ?? {}).outDir, types: opts.types, sets: opts.sets });
+        await runSync({
+          config: cfgPath,
+          outDir: ((cli as any).opts?.() ?? {}).outDir,
+          types: opts.types,
+          sets: opts.sets,
+          include: opts.include,
+          exclude: opts.exclude
+        });
       } catch (e) {
         console.error(e);
       }
@@ -336,13 +369,17 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
-  .action(async (opts: { config?: string; types?: string; sets?: string }) => {
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const res = await runSync({
       config: opts.config,
       write: false,
       outDir: ((cli as any).opts?.() ?? {}).outDir,
       types: opts.types,
-      sets: opts.sets
+      sets: opts.sets,
+      include: opts.include,
+      exclude: opts.exclude
     });
 
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
@@ -431,12 +468,15 @@ cli
   .option("--group-order <list>", "Comma-separated namespace order for tokens.md (e.g. core,components)")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
-  .action(async (opts: { config?: string; md?: boolean; groupOrder?: string; types?: string; sets?: string }) => {
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; md?: boolean; groupOrder?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
+    applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
 
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
@@ -544,7 +584,9 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
-  .action(async (opts: { config?: string; types?: string; sets?: string }) => {
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     // 1) schema: ensure checked-in schema matches current runtime schema
     const schemaOut = path.resolve(process.cwd(), "forgeui.config.schema.json");
     const nextSchema = JSON.stringify(asConfigSchema(), null, 2) + "\n";
@@ -557,6 +599,7 @@ cli
 
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
+    applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
 
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
@@ -569,7 +612,9 @@ cli
       write: false,
       outDir: ((cli as any).opts?.() ?? {}).outDir,
       types: opts.types,
-      sets: opts.sets
+      sets: opts.sets,
+      include: opts.include,
+      exclude: opts.exclude
     });
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";

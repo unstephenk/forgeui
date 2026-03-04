@@ -43,6 +43,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: token detail page "View in table" link
 - CLI: add `--types` shorthand for config.filter.types
 - CLI: add `--sets` shorthand for config.filter.sets
+- CLI: add `--include/--exclude` shorthand flags for filter globs
 - docs: add Tailwind v3 → v4 migration page (docs-site)
 - tokens: add `border` token type mapping (CSS vars + Tailwind preset)
 - figma pull: support `--cache-dir` override (cache location control)
@@ -77,9 +78,9 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 2. **Docs site**: support deep links to tokens table via `?q=` (and document it).
 3. **Tokens**: add `gradient` token type mapping + tests.
 4. **Docs site**: show token count + filtered count in table footer.
-5. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
-6. **CLI**: add `forgeui clean` to remove generated files + caches.
-7. **Plugins**: add plugin execution timing info under --debug.
-8. **Docs**: add a full "Config reference" page.
-9. **Tokens**: add more mapping tests for real-world exports.
-10. **Docs site**: show which sets were indexed (and which were filtered).
+5. **CLI**: add `forgeui clean` to remove generated files + caches.
+6. **Plugins**: add plugin execution timing info under --debug.
+7. **Docs**: add a full "Config reference" page.
+8. **Tokens**: add more mapping tests for real-world exports.
+9. **Docs site**: show which sets were indexed (and which were filtered).
+10. **CLI**: allow `--theme <name>` to generate a single theme (debugging / speed).

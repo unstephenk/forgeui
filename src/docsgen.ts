@@ -1,3 +1,5 @@
+import picomatch from "picomatch";
+
 import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
 import { flattenSetTokens, getThemes, listEnabledSetsForTheme, resolveTokenValue } from "./tokens.js";
 import { themeFallbackChain } from "./theme.js";
@@ -14,6 +16,9 @@ export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): { 
   const themes = getThemes(doc);
   const out: TokenIndexEntry[] = [];
 
+  const include = cfg.filter?.include?.length ? picomatch(cfg.filter.include) : null;
+  const exclude = cfg.filter?.exclude?.length ? picomatch(cfg.filter.exclude) : null;
+
   // Union of enabled sets across themes (so index is complete)
   const enabledSets = Array.from(
     new Set(
@@ -24,6 +29,12 @@ export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): { 
   for (const setName of enabledSets) {
     const flat = flattenSetTokens((doc as any)[setName], [setName]);
     for (const t of flat) {
+      if (cfg.filter?.types?.length && !cfg.filter.types.includes(t.leaf.$type)) continue;
+
+      const fq = t.fqName;
+      if (include && !include(fq)) continue;
+      if (exclude && exclude(fq)) continue;
+
       const cssVar = `--${toKebab(t.path)}`;
       const themesMap: Record<string, unknown> = {};
       for (const th of themes) {
