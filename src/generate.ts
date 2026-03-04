@@ -219,8 +219,9 @@ function shadowToCssValue(resolved: unknown): string {
   return parts.join(", ");
 }
 
-export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig): string {
-  const themes = getThemes(doc);
+export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig, opts?: { theme?: string }): string {
+  let themes = getThemes(doc);
+  if (opts?.theme) themes = themes.filter((t) => t.name === opts.theme);
 
   const dimOpts: NormalizeDimensionOptions = {
     unit: cfg.css?.dimensions?.unit ?? "preserve",

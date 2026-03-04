@@ -155,6 +155,7 @@ async function runSync(params?: {
   include?: string;
   exclude?: string;
   format?: boolean;
+  theme?: string;
 }): Promise<{
   cfgPath: string;
   tokensAbs: string;
@@ -192,7 +193,7 @@ async function runSync(params?: {
   const plugins = await loadPlugins(cfg);
 
   // Generate base outputs
-  const cssRaw = generateTokensCss(doc, cfg);
+  const cssRaw = generateTokensCss(doc, cfg, params?.theme ? { theme: params.theme } : undefined);
   const genRaw = generateTailwindPreset(doc, cfg);
 
   // Expose outputs by *filename* (what actually gets written)
@@ -334,9 +335,19 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .option("--theme <name>", "Generate CSS vars for a single theme only (debug/speed)")
   .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
   .action(
-    async (opts: { config?: string; dryRun?: boolean; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
+    async (opts: {
+      config?: string;
+      dryRun?: boolean;
+      types?: string;
+      sets?: string;
+      include?: string;
+      exclude?: string;
+      theme?: string;
+      format?: boolean;
+    }) => {
       await runSync({
         config: opts.config,
         write: !opts.dryRun,
@@ -345,6 +356,7 @@ cli
         sets: opts.sets,
         include: opts.include,
         exclude: opts.exclude,
+        theme: opts.theme,
         format: opts.format
       });
     }
@@ -357,8 +369,9 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .option("--theme <name>", "Generate CSS vars for a single theme only (debug/speed)")
   .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; theme?: string; format?: boolean }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
@@ -376,6 +389,7 @@ cli
       sets: opts.sets,
       include: opts.include,
       exclude: opts.exclude,
+      theme: opts.theme,
       format: opts.format
     });
 
@@ -389,6 +403,7 @@ cli
           sets: opts.sets,
           include: opts.include,
           exclude: opts.exclude,
+          theme: opts.theme,
           format: opts.format
         });
       } catch (e) {
@@ -404,8 +419,9 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .option("--theme <name>", "Generate CSS vars for a single theme only (debug/speed)")
   .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; theme?: string; format?: boolean }) => {
     const res = await runSync({
       config: opts.config,
       write: false,
@@ -414,6 +430,7 @@ cli
       sets: opts.sets,
       include: opts.include,
       exclude: opts.exclude,
+      theme: opts.theme,
       format: opts.format
     });
 
@@ -705,8 +722,9 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .option("--theme <name>", "Generate CSS vars for a single theme only (debug/speed)")
   .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; theme?: string; format?: boolean }) => {
     // 1) schema: ensure checked-in schema matches current runtime schema
     const schemaOut = path.resolve(process.cwd(), "forgeui.config.schema.json");
     const nextSchema = JSON.stringify(asConfigSchema(), null, 2) + "\n";
@@ -736,6 +754,7 @@ cli
       sets: opts.sets,
       include: opts.include,
       exclude: opts.exclude,
+      theme: opts.theme,
       format: opts.format
     });
     const diffs: { file: string; diff: string }[] = [];
