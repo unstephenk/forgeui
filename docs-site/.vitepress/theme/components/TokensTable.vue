@@ -15,7 +15,12 @@
     <div v-else-if="error" class="tok-error"><code>{{ error }}</code></div>
 
     <div v-else>
-      <p class="tok-hint"><small>Keyboard: <code>/</code> focus search, <code>j</code>/<code>k</code> move, <code>Enter</code> open, <code>Esc</code> clear.</small></p>
+      <p class="tok-hint">
+        <small>
+          Keyboard: <code>/</code> focus search, <code>j</code>/<code>k</code> move, <code>Enter</code> open, <code>Esc</code> clear.
+          <span v-if="data?.generatedAt"> · Data: <code>{{ data.generatedAt }}</code></span>
+        </small>
+      </p>
 
       <div v-if="ns === ''" class="tok-chips">
         <a
@@ -73,6 +78,8 @@ import { withBase } from 'vitepress'
 
 type Entry = { token: string; type: string; cssVar: string; themes?: Record<string, any> }
 
+type TokenIndex = { generatedAt?: string; tokens: Entry[] }
+
 const props = defineProps<{ ns?: '' | 'core' | 'components'; type?: string }>()
 const ns = props.ns ?? ''
 const typeFilter = computed(() => (props.type ? String(props.type) : ''))
@@ -82,7 +89,7 @@ const error = ref('')
 const q = ref('')
 const searchEl = ref<HTMLInputElement | null>(null)
 const nsFilter = ref('')
-const data = ref<{ tokens: Entry[] } | null>(null)
+const data = ref<TokenIndex | null>(null)
 const selected = ref(0)
 
 const themeList = computed(() => {
