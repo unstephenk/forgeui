@@ -2,6 +2,7 @@ export type TokenType =
   | "color"
   | "dimension"
   | "shadow"
+  | "gradient"
   | "fontFamily"
   | "fontSize"
   | "lineHeight"

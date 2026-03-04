@@ -23,6 +23,7 @@ const theme = {
   borderColor: {},
   borderWidth: {},
   borderStyle: {},
+  backgroundImage: {},
   fontFamily: {},
   fontSize: {},
   fontWeight: {},

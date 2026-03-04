@@ -40,6 +40,7 @@ const preset = {
       borderColor: {},
       borderWidth: {},
       borderStyle: {},
+      backgroundImage: {},
       fontFamily: {},
       fontSize: {},
       fontWeight: {},

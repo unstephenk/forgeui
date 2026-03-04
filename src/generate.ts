@@ -396,6 +396,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const borderColor: any = {};
   const borderWidth: any = {};
   const borderStyle: any = {};
+  const backgroundImage: any = {};
 
   // Typography can be expressed either as dedicated tokens ($type=typography)
   // or as separate tokens like `font.family.*`, `font.size.*`, etc.
@@ -461,6 +462,14 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         continue;
       }
 
+      if (t.leaf.$type === "gradient") {
+        const gKey = tokenPathToTailwindKey(t.path, "gradient");
+        if (!gKey.length) continue;
+        const vname = `--${toKebab(t.path)}`;
+        setNested(backgroundImage, gKey, `var(${vname})`);
+        continue;
+      }
+
       if (t.leaf.$type === "typography") {
         const key = tokenPathToTailwindKey(t.path, "typography");
         if (!key.length) continue;
@@ -511,6 +520,7 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
     borderColor,
     borderWidth,
     borderStyle,
+    backgroundImage,
     fontFamily,
     fontSize,
     fontWeight,

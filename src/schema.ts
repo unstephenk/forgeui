@@ -56,7 +56,7 @@ export const CONFIG_SCHEMA = {
         types: {
           type: "array",
           items: {
-            enum: ["color", "dimension", "shadow", "fontFamily", "fontSize", "lineHeight", "fontWeight", "typography"]
+            enum: ["color", "dimension", "shadow", "gradient", "fontFamily", "fontSize", "lineHeight", "fontWeight", "typography", "border"]
           }
         }
       }

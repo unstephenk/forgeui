@@ -87,12 +87,13 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
-2. **Docs site**: support deep links to tokens table via `?q=` (and document it).
-3. **Tokens**: add `gradient` token type mapping + tests.
-4. **Docs site**: show token count + filtered count in table footer.
-5. **Tokens**: add more mapping tests for real-world exports.
-6. **Docs site**: show which sets were indexed (and which were filtered).
-7. **CLI**: allow `--theme <name>` to generate a single theme (debugging / speed).
-8. **Docs site**: support client-side token type filter chips on token detail page.
-9. **Docs site**: add a visible "Docs generated at" banner on tokens pages.
-10. **CLI**: show active filter summary in `forgeui doctor`.
+2. **Tokens**: add more mapping tests for real-world exports.
+3. **CLI**: allow `--theme <name>` to generate a single theme (debugging / speed).
+4. **Docs site**: support client-side token type filter chips on token detail page.
+5. **Docs site**: add a visible "Docs generated at" banner on tokens pages.
+6. **CLI**: add `forgeui clean` option to preserve caches (`--keep-cache`).
+7. **Plugins**: add plugin execution timing summary output on `forgeui doctor`.
+8. **Figma pull**: add `--format tokens|raw|both` output selector.
+9. **Docs**: add a full "Config reference" page in /docs-site (not just repo docs).
+10. **Tokens**: add token type mapping for `opacity`.
+11. **Tokens**: add token type mapping for `zIndex`.

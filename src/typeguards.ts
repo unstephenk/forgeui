@@ -5,6 +5,7 @@ const TOKEN_TYPES: TokenType[] = [
   "color",
   "dimension",
   "shadow",
+  "gradient",
   "fontFamily",
   "fontSize",
   "lineHeight",

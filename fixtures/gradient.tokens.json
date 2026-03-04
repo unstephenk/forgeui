@@ -1,0 +1,18 @@
+{
+  "$themes": [
+    { "name": "Light", "selectedTokenSets": { "core": "enabled" } },
+    { "name": "Dark", "selectedTokenSets": { "core": "enabled" } }
+  ],
+  "$sets": { "core": "enabled" },
+  "core": {
+    "gradient": {
+      "hero": {
+        "$type": "gradient",
+        "$value": {
+          "Light": "linear-gradient(90deg, #6366F1, #22C55E)",
+          "Dark": "linear-gradient(90deg, #818CF8, #4ADE80)"
+        }
+      }
+    }
+  }
+}
