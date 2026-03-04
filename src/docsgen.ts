@@ -12,7 +12,12 @@ export type TokenIndexEntry = {
   themes: Record<string, unknown>;
 };
 
-export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): { generatedAt: string; tokens: TokenIndexEntry[] } {
+export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): {
+  generatedAt: string;
+  themes: string[];
+  indexedSets: string[];
+  tokens: TokenIndexEntry[];
+} {
   const themes = getThemes(doc);
   const out: TokenIndexEntry[] = [];
 
@@ -47,5 +52,5 @@ export function generateTokenIndex(doc: TokensStudioDoc, cfg: ForgeUIConfig): { 
   // stable ordering
   out.sort((a, b) => a.token.localeCompare(b.token));
 
-  return { generatedAt: new Date().toISOString(), tokens: out };
+  return { generatedAt: new Date().toISOString(), themes: themes.map((t) => t.name), indexedSets: enabledSets, tokens: out };
 }
