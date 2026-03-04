@@ -9,6 +9,11 @@ import { DEFAULT_CONFIG_FILES, configTemplate, loadConfig, resolveConfigPath } f
 import { generateTailwindPreset, generateTokensCss, outPath } from "./generate.js";
 import { loadPlugins, runHook } from "./plugins.js";
 import { maybePrettifyTs } from "./prettier.js";
+
+async function prettierFormat(code: string, parser: "typescript" | "css" | "json" | "markdown"): Promise<string> {
+  const prettier = await import("prettier");
+  return await prettier.format(code, { parser });
+}
 import { makeLock, makeManifest } from "./lock.js";
 import type { TokensStudioDoc } from "./types.js";
 import { ensureDir, readJsonFile, writeFile } from "./utils.js";
@@ -420,6 +425,67 @@ cli
 
     if (GLOBAL.json) process.stdout.write(JSON.stringify({ ok: true, written }, null, 2) + "\n");
     else for (const w of written) log(`Wrote ${w}`);
+  });
+
+cli
+  .command("fmt", "Format generated outputs in outDir (prettier)")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .option("--check", "Exit non-zero if formatting would change any file")
+  .action(async (opts: { config?: string; check?: boolean }) => {
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+    const outDir = ((cli as any).opts?.() ?? {}).outDir ?? cfg.outDir;
+
+    const candidates = [
+      outPath({ ...cfg, outDir }, cfg.tailwind.cssFile),
+      outPath({ ...cfg, outDir }, cfg.tailwind.presetFile),
+      ...(cfg.tailwind.themeFile ? [outPath({ ...cfg, outDir }, cfg.tailwind.themeFile)] : []),
+      outPath({ ...cfg, outDir }, "forgeui.lock.json"),
+      outPath({ ...cfg, outDir }, "forgeui.manifest.json"),
+      outPath({ ...cfg, outDir }, "tokens.index.json"),
+      outPath({ ...cfg, outDir }, "tokens.md"),
+    ];
+
+    const files = candidates.filter((p) => fs.existsSync(p));
+    if (!files.length) {
+      if (!GLOBAL.json) log(`No generated files found in ${path.relative(process.cwd(), outDir) || "."}`);
+      process.exitCode = 0;
+      return;
+    }
+
+    const changed: string[] = [];
+
+    for (const abs of files) {
+      const ext = path.extname(abs).toLowerCase();
+      const prev = fs.readFileSync(abs, "utf8");
+
+      let next = prev;
+      if (ext === ".ts" || ext === ".js" || ext === ".mjs" || ext === ".cjs") {
+        next = await prettierFormat(prev, "typescript");
+      } else if (ext === ".css") {
+        next = await prettierFormat(prev, "css");
+      } else if (ext === ".json") {
+        next = await prettierFormat(prev, "json");
+      } else if (ext === ".md") {
+        next = await prettierFormat(prev, "markdown");
+      }
+
+      if (next !== prev) {
+        changed.push(path.relative(process.cwd(), abs));
+        if (!opts.check) writeFile(abs, next);
+      }
+    }
+
+    if (GLOBAL.json) {
+      process.stdout.write(JSON.stringify({ ok: changed.length === 0, changed }, null, 2) + "\n");
+    } else {
+      if (!changed.length) log("Already formatted.");
+      else {
+        for (const f of changed) log(`${opts.check ? "Would format" : "Formatted"} ${f}`);
+      }
+    }
+
+    process.exitCode = opts.check ? (changed.length ? 1 : 0) : 0;
   });
 
 cli
