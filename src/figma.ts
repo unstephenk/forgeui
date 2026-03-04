@@ -9,6 +9,8 @@ type FigmaPullParams = {
   outFile: string;
   // Optional: also write the raw response/payload (useful for debugging)
   rawOutFile?: string;
+  /** Output selector (default: "tokens"). */
+  format?: "tokens" | "raw" | "both";
   // Mode 1: direct URL to exported tokens JSON
   url?: string;
   // Mode 2: fetch a specific node and extract tokens from plugin data
@@ -159,6 +161,18 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
   const fileKey = params.fileKey ?? process.env.FIGMA_FILE_KEY;
   const nodeId = params.nodeId ?? process.env.FIGMA_NODE_ID;
 
+  const format: "tokens" | "raw" | "both" = params.format ?? (params.rawOutFile ? "both" : "tokens");
+  const writeTokens = format === "tokens" || format === "both";
+  const writeRaw = format === "raw" || format === "both";
+  if (writeRaw && !params.rawOutFile) {
+    throw new Error(
+      [
+        "figma pull: --format raw|both requires a raw output file.",
+        "Pass --raw <file> (or omit --format and use --raw for backwards-compatible behavior)."
+      ].join("\n")
+    );
+  }
+
   let json: any;
   let raw: any;
 
@@ -177,11 +191,13 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
       raw = snap;
       json = snap;
 
-      const outAbs = path.resolve(process.cwd(), params.outFile);
-      ensureDir(path.dirname(outAbs));
-      fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+      if (writeTokens) {
+        const outAbs = path.resolve(process.cwd(), params.outFile);
+        ensureDir(path.dirname(outAbs));
+        fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+      }
 
-      if (params.rawOutFile) {
+      if (writeRaw && params.rawOutFile) {
         const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
         ensureDir(path.dirname(rawAbs));
         fs.writeFileSync(rawAbs, JSON.stringify(raw, null, 2) + "\n", "utf8");
@@ -203,14 +219,16 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
 
       let wrote = false;
 
-      const outAbs = path.resolve(process.cwd(), params.outFile);
-      if (!fs.existsSync(outAbs)) {
-        ensureDir(path.dirname(outAbs));
-        fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
-        wrote = true;
+      if (writeTokens) {
+        const outAbs = path.resolve(process.cwd(), params.outFile);
+        if (!fs.existsSync(outAbs)) {
+          ensureDir(path.dirname(outAbs));
+          fs.writeFileSync(outAbs, JSON.stringify(snap, null, 2) + "\n", "utf8");
+          wrote = true;
+        }
       }
 
-      if (params.rawOutFile) {
+      if (writeRaw && params.rawOutFile) {
         const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
         if (!fs.existsSync(rawAbs)) {
           ensureDir(path.dirname(rawAbs));
@@ -270,11 +288,13 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
         json = extracted;
       }
 
-      const outAbs = path.resolve(process.cwd(), params.outFile);
-      ensureDir(path.dirname(outAbs));
-      fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+      if (writeTokens) {
+        const outAbs = path.resolve(process.cwd(), params.outFile);
+        ensureDir(path.dirname(outAbs));
+        fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+      }
 
-      if (params.rawOutFile) {
+      if (writeRaw && params.rawOutFile) {
         const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
         ensureDir(path.dirname(rawAbs));
         fs.writeFileSync(rawAbs, JSON.stringify(raw, null, 2) + "\n", "utf8");
@@ -304,14 +324,16 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
 
       let wrote = false;
 
-      const outAbs = path.resolve(process.cwd(), params.outFile);
-      if (!fs.existsSync(outAbs) && json) {
-        ensureDir(path.dirname(outAbs));
-        fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
-        wrote = true;
+      if (writeTokens) {
+        const outAbs = path.resolve(process.cwd(), params.outFile);
+        if (!fs.existsSync(outAbs) && json) {
+          ensureDir(path.dirname(outAbs));
+          fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+          wrote = true;
+        }
       }
 
-      if (params.rawOutFile) {
+      if (writeRaw && params.rawOutFile) {
         const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
         if (!fs.existsSync(rawAbs)) {
           ensureDir(path.dirname(rawAbs));
@@ -370,11 +392,13 @@ export async function figmaPull(params: FigmaPullParams): Promise<FigmaPullResul
     );
   }
 
-  const outAbs = path.resolve(process.cwd(), params.outFile);
-  ensureDir(path.dirname(outAbs));
-  fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+  if (writeTokens) {
+    const outAbs = path.resolve(process.cwd(), params.outFile);
+    ensureDir(path.dirname(outAbs));
+    fs.writeFileSync(outAbs, JSON.stringify(json, null, 2) + "\n", "utf8");
+  }
 
-  if (params.rawOutFile) {
+  if (writeRaw && params.rawOutFile) {
     // Prefer the raw payload if available; fall back to extracted JSON.
     const rawAbs = path.resolve(process.cwd(), params.rawOutFile);
     ensureDir(path.dirname(rawAbs));

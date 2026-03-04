@@ -512,6 +512,7 @@ cli
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--out <file>", "Override extracted output file (defaults to config tokensPath)")
   .option("--raw <file>", "Also write the raw response/payload JSON")
+  .option("--format <format>", "Output format: tokens|raw|both (default: tokens; if --raw is set, default becomes both)")
   .option("--url <url>", "Override FIGMA_TOKENS_URL")
   .option("--fileKey <key>", "Figma file key (alternate mode; uses Figma REST API)")
   .option("--nodeId <id>", "Figma node id (alternate mode; uses Figma REST API)")
@@ -522,6 +523,7 @@ cli
     config?: string;
     out?: string;
     raw?: string;
+    format?: string;
     url?: string;
     fileKey?: string;
     nodeId?: string;
@@ -533,9 +535,17 @@ cli
     const cfg = await loadConfig(cfgPath);
 
     const outFile = opts.out ?? cfg.tokensPath;
+
+    const format = ((opts.format ?? (opts.raw ? "both" : "tokens")) as any) as "tokens" | "raw" | "both";
+    let rawOutFile = opts.raw;
+    if ((format === "raw" || format === "both") && !rawOutFile) {
+      rawOutFile = outFile.replace(/\.json$/i, "") + ".raw.json";
+    }
+
     const res = await figmaPull({
       outFile,
-      rawOutFile: opts.raw,
+      rawOutFile,
+      format,
       url: opts.url,
       fileKey: opts.fileKey,
       nodeId: opts.nodeId,
@@ -544,12 +554,16 @@ cli
       noFetch: opts.fetch === false,
     });
 
+    const written: string[] = [];
+    if (res.written) {
+      if (format === "tokens" || format === "both") written.push(outFile);
+      if ((format === "raw" || format === "both") && rawOutFile) written.push(rawOutFile);
+    }
+
     if (GLOBAL.json) {
-      process.stdout.write(
-        JSON.stringify({ ok: true, written: res.written ? [outFile] : [], unchanged: !res.written }, null, 2) + "\n",
-      );
+      process.stdout.write(JSON.stringify({ ok: true, written, unchanged: !res.written }, null, 2) + "\n");
     } else {
-      if (res.written) log(`Wrote ${outFile}`);
+      if (written.length) written.forEach((f) => log(`Wrote ${f}`));
       else log("No changes (cached). ");
     }
   });
