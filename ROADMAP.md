@@ -76,6 +76,8 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - release: helper now does preflight + build + pack smoke + annotated tag + push (with --dry-run/--no-push)
 - ci: build docs-site + verify Pages base path/assets on ubuntu+windows
 - docs-site: Tokens page now has jump links to namespace sections
+- CLI: `forgeui validate` now supports `--sets/--include/--exclude` overrides
+- CLI: fix broken `runSync` return type (build blocker)
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).

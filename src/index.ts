@@ -146,7 +146,16 @@ function applyFormatOverride(cfg: any, format?: boolean) {
   cfg.format.prettier = true;
 }
 
-async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }): Promise<{"}"}"}
+async function runSync(params?: {
+  config?: string;
+  write?: boolean;
+  outDir?: string;
+  types?: string;
+  sets?: string;
+  include?: string;
+  exclude?: string;
+  format?: boolean;
+}): Promise<{
   cfgPath: string;
   tokensAbs: string;
   cssPath: string;
@@ -155,6 +164,8 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   manifestPath: string;
   css: string;
   preset: string;
+  themePath?: string;
+  themeFragment?: string;
 }> {
   const cfgPath = resolveConfigPath(params?.config);
   const cfg = await loadConfig(cfgPath);
@@ -831,11 +842,16 @@ cli
   .command("validate", "Validate tokens.json and print warnings")
   .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
   .option("--types <list>", "Override config.filter.types (comma-separated; e.g. color,dimension)")
-  .action(async (opts: { config?: string; types?: string }) => {
+  .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
+  .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
+  .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     applyTypesOverride(cfg, opts.types);
+    applySetsOverride(cfg, opts.sets);
+    applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
 
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
