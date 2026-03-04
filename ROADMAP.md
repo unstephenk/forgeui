@@ -85,16 +85,17 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: tokens table shows indexed sets + themes metadata
 - docs-site: token detail shows docs generated timestamp + indexed sets/themes
 - figma pull: add `--format tokens|raw|both` output selector
+- docs-site: expand config reference page (full defaults + all fields)
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
 2. **CLI**: add `forgeui clean` option to preserve caches (`--keep-cache`).
 3. **Plugins**: add plugin execution timing summary output on `forgeui doctor`.
-4. **Docs**: add a full "Config reference" page in /docs-site (not just repo docs).
-5. **Tokens**: add token type mapping for `opacity`.
-6. **Tokens**: add token type mapping for `zIndex`.
-7. **Tokens**: add token type mapping for `duration`.
-8. **Docs site**: add a “copy permalink” button on token detail.
-9. **DX**: add `forgeui init --example` to drop sample tokens + config.
-10. **CLI**: add `forgeui figma pull --format tokens|raw|both` output selector.
-11. **Tokens**: add token type mapping for `elevation` (shadow aliases) (future).
+4. **Tokens**: add token type mapping for `opacity`.
+5. **Tokens**: add token type mapping for `zIndex`.
+6. **Tokens**: add token type mapping for `duration`.
+7. **Docs site**: add a “copy permalink” button on token detail.
+8. **DX**: add `forgeui init --example` to drop sample tokens + config.
+9. **Tokens**: add token type mapping for `elevation` (shadow aliases) (future).
+10. **Docs**: add a CLI reference page (all commands/flags) in docs-site.
+11. **Tokens**: add token type mapping for `fontFamily` (tailwind preset mapping).
