@@ -140,7 +140,13 @@ function applyIncludeExcludeOverride(cfg: any, params?: { include?: string; excl
   if (exclude) cfg.filter.exclude = exclude;
 }
 
-async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string; sets?: string; include?: string; exclude?: string }): Promise<{"}"}
+function applyFormatOverride(cfg: any, format?: boolean) {
+  if (!format) return;
+  cfg.format ??= {};
+  cfg.format.prettier = true;
+}
+
+async function runSync(params?: { config?: string; write?: boolean; outDir?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }): Promise<{"}"}"}
   cfgPath: string;
   tokensAbs: string;
   cssPath: string;
@@ -157,6 +163,7 @@ async function runSync(params?: { config?: string; write?: boolean; outDir?: str
   applyTypesOverride(cfg, params?.types);
   applySetsOverride(cfg, params?.sets);
   applyIncludeExcludeOverride(cfg, { include: params?.include, exclude: params?.exclude });
+  applyFormatOverride(cfg, params?.format);
 
   const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
   if (!fs.existsSync(tokensAbs)) {
@@ -313,17 +320,21 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
-  .action(async (opts: { config?: string; dryRun?: boolean; types?: string; sets?: string; include?: string; exclude?: string }) => {
-    await runSync({
-      config: opts.config,
-      write: !opts.dryRun,
-      outDir: ((cli as any).opts?.() ?? {}).outDir,
-      types: opts.types,
-      sets: opts.sets,
-      include: opts.include,
-      exclude: opts.exclude
-    });
-  });
+  .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
+  .action(
+    async (opts: { config?: string; dryRun?: boolean; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
+      await runSync({
+        config: opts.config,
+        write: !opts.dryRun,
+        outDir: ((cli as any).opts?.() ?? {}).outDir,
+        types: opts.types,
+        sets: opts.sets,
+        include: opts.include,
+        exclude: opts.exclude,
+        format: opts.format
+      });
+    }
+  );
 
 cli
   .command("watch", "Watch tokens file and re-run sync")
@@ -332,13 +343,15 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
+  .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
     const cfgPath = resolveConfigPath(opts.config);
     const cfg = await loadConfig(cfgPath);
 
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
     applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
+    applyFormatOverride(cfg, opts.format);
 
     const watchPath = path.resolve(process.cwd(), cfg.tokensPath);
     log(`Watching ${path.relative(process.cwd(), watchPath)}...`);
@@ -348,7 +361,8 @@ cli
       types: opts.types,
       sets: opts.sets,
       include: opts.include,
-      exclude: opts.exclude
+      exclude: opts.exclude,
+      format: opts.format
     });
 
     const w = chokidar.watch(watchPath, { ignoreInitial: true });
@@ -360,7 +374,8 @@ cli
           types: opts.types,
           sets: opts.sets,
           include: opts.include,
-          exclude: opts.exclude
+          exclude: opts.exclude,
+          format: opts.format
         });
       } catch (e) {
         console.error(e);
@@ -375,7 +390,8 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
+  .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
     const res = await runSync({
       config: opts.config,
       write: false,
@@ -383,7 +399,8 @@ cli
       types: opts.types,
       sets: opts.sets,
       include: opts.include,
-      exclude: opts.exclude
+      exclude: opts.exclude,
+      format: opts.format
     });
 
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
@@ -642,7 +659,8 @@ cli
   .option("--sets <list>", "Override config.filter.sets (comma-separated; e.g. core,components)")
   .option("--include <globs>", "Override config.filter.include (comma-separated; e.g. core.*,components.*)")
   .option("--exclude <globs>", "Override config.filter.exclude (comma-separated)")
-  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string }) => {
+  .option("--format", "Enable prettier formatting for generated TS outputs (shorthand for config.format.prettier=true)")
+  .action(async (opts: { config?: string; types?: string; sets?: string; include?: string; exclude?: string; format?: boolean }) => {
     // 1) schema: ensure checked-in schema matches current runtime schema
     const schemaOut = path.resolve(process.cwd(), "forgeui.config.schema.json");
     const nextSchema = JSON.stringify(asConfigSchema(), null, 2) + "\n";
@@ -656,6 +674,7 @@ cli
     applyTypesOverride(cfg, opts.types);
     applySetsOverride(cfg, opts.sets);
     applyIncludeExcludeOverride(cfg, { include: opts.include, exclude: opts.exclude });
+    applyFormatOverride(cfg, opts.format);
 
     const tokensAbs = path.resolve(process.cwd(), cfg.tokensPath);
     const doc = readJsonFile<TokensStudioDoc>(tokensAbs);
@@ -670,7 +689,8 @@ cli
       types: opts.types,
       sets: opts.sets,
       include: opts.include,
-      exclude: opts.exclude
+      exclude: opts.exclude,
+      format: opts.format
     });
     const existingCss = fs.existsSync(res.cssPath) ? fs.readFileSync(res.cssPath, "utf8") : "";
     const existingPreset = fs.existsSync(res.presetPath) ? fs.readFileSync(res.presetPath, "utf8") : "";
