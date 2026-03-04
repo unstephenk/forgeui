@@ -243,6 +243,28 @@ function normalizeZIndex(resolved: unknown): string {
   return String(resolved);
 }
 
+function normalizeDuration(resolved: unknown, precision: number): string {
+  // Tailwind duration values are typically strings like "150ms".
+  if (typeof resolved === "number") {
+    if (!Number.isFinite(resolved)) return String(resolved);
+    return `${formatNumber(resolved, precision)}ms`;
+  }
+
+  if (typeof resolved === "string") {
+    const s = resolved.trim();
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) {
+      const n = Number(s);
+      if (!Number.isFinite(n)) return s;
+      return `${formatNumber(n, precision)}ms`;
+    }
+    // already unit-bearing
+    if (/^-?\d+(?:\.\d+)?\s*(ms|s)$/i.test(s)) return s.replace(/\s+/g, "");
+    return s;
+  }
+
+  return String(resolved);
+}
+
 function shadowToCssValue(resolved: unknown): string {
   // Tokens Studio shadow can be an array of shadow objects.
   // We accept either:
@@ -313,6 +335,8 @@ export function generateTokensCss(doc: TokensStudioDoc, cfg: ForgeUIConfig, opts
           lines.push(`  ${varName}: ${normalizeOpacity(resolved, dimOpts.precision)};`);
         } else if (t.leaf.$type === "zIndex") {
           lines.push(`  ${varName}: ${normalizeZIndex(resolved)};`);
+        } else if (t.leaf.$type === "duration") {
+          lines.push(`  ${varName}: ${normalizeDuration(resolved, dimOpts.precision)};`);
         } else if (t.leaf.$type === "typography" && isObject(resolved)) {
           // Expand composite typography tokens into per-field CSS vars.
           const base = varName;
@@ -453,6 +477,8 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
   const backgroundImage: any = {};
   const opacity: any = {};
   const zIndex: any = {};
+  const transitionDuration: any = {};
+  const animationDuration: any = {};
 
   // Typography can be expressed either as dedicated tokens ($type=typography)
   // or as separate tokens like `font.family.*`, `font.size.*`, etc.
@@ -492,6 +518,16 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
         if (!zKey.length) continue;
         const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
         setNested(zIndex, zKey, normalizeZIndex(resolved));
+        continue;
+      }
+
+      if (t.leaf.$type === "duration") {
+        const dKey = tokenPathToTailwindKey(t.path, "duration");
+        if (!dKey.length) continue;
+        const resolved = resolveTokenValue(doc, t.leaf, rootTheme, [], fq, [rootTheme]);
+        const v = normalizeDuration(resolved, dimOpts.precision);
+        setNested(transitionDuration, dKey, v);
+        setNested(animationDuration, dKey, v);
         continue;
       }
 
@@ -602,6 +638,8 @@ export function generateTailwindPreset(doc: TokensStudioDoc, cfg: ForgeUIConfig)
 
   if (Object.keys(opacity).length) theme.opacity = opacity;
   if (Object.keys(zIndex).length) theme.zIndex = zIndex;
+  if (Object.keys(transitionDuration).length) theme.transitionDuration = transitionDuration;
+  if (Object.keys(animationDuration).length) theme.animationDuration = animationDuration;
 
   const preset = {
     darkMode: ["class", "[data-theme='dark']"],

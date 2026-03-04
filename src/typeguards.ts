@@ -13,7 +13,8 @@ const TOKEN_TYPES: TokenType[] = [
   "typography",
   "border",
   "opacity",
-  "zIndex"
+  "zIndex",
+  "duration"
 ];
 
 export function isTokenType(v: unknown): v is TokenType {

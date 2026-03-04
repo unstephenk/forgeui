@@ -88,16 +88,17 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: expand config reference page (full defaults + all fields)
 - tokens: add token type mapping for `opacity` (CSS vars + Tailwind preset)
 - tokens: add token type mapping for `zIndex` (CSS vars + Tailwind preset)
+- tokens: add token type mapping for `duration` (CSS vars + Tailwind preset)
 
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
 2. **CLI**: add `forgeui clean` option to preserve caches (`--keep-cache`).
 3. **Plugins**: add plugin execution timing summary output on `forgeui doctor`.
-4. **Tokens**: add token type mapping for `duration`.
-5. **Docs site**: add a “copy permalink” button on token detail.
-6. **DX**: add `forgeui init --example` to drop sample tokens + config.
-7. **Tokens**: add token type mapping for `elevation` (shadow aliases) (future).
-8. **Docs**: add a CLI reference page (all commands/flags) in docs-site.
-9. **Tokens**: add token type mapping for `fontFamily` (tailwind preset mapping).
-10. **Tokens**: add token type mapping for `lineHeight` (tailwind preset mapping).
-11. **Tokens**: add token type mapping for `fontWeight` (tailwind preset mapping).
+4. **Docs site**: add a “copy permalink” button on token detail.
+5. **DX**: add `forgeui init --example` to drop sample tokens + config.
+6. **Tokens**: add token type mapping for `elevation` (shadow aliases) (future).
+7. **Docs**: add a CLI reference page (all commands/flags) in docs-site.
+8. **Tokens**: add token type mapping for `fontFamily` (tailwind preset mapping).
+9. **Tokens**: add token type mapping for `lineHeight` (tailwind preset mapping).
+10. **Tokens**: add token type mapping for `fontWeight` (tailwind preset mapping).
+11. **Tokens**: add token type mapping for `letterSpacing` (tailwind preset mapping).
