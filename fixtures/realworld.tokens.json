@@ -1,0 +1,63 @@
+{
+  "$themes": [
+    { "name": "Light", "selectedTokenSets": { "core": "enabled", "theme": "enabled" } },
+    { "name": "Dark", "selectedTokenSets": { "core": "enabled", "theme": "enabled" } }
+  ],
+  "$sets": { "core": "enabled", "theme": "enabled" },
+  "core": {
+    "color": {
+      "brand": {
+        "500": { "$type": "color", "$value": { "Light": "#6366F1", "Dark": "#818CF8" } }
+      }
+    },
+    "gradient": {
+      "hero": {
+        "$type": "gradient",
+        "$value": {
+          "Light": "linear-gradient(90deg, #6366F1, #22C55E)",
+          "Dark": "linear-gradient(90deg, #818CF8, #4ADE80)"
+        }
+      }
+    },
+    "border": {
+      "subtle": {
+        "$type": "border",
+        "$value": {
+          "color": { "Light": "#E2E8F0", "Dark": "#334155" },
+          "width": "1px",
+          "style": "solid"
+        }
+      }
+    },
+    "typography": {
+      "heading": {
+        "h1": {
+          "$type": "typography",
+          "$value": {
+            "Light": {
+              "fontFamily": "Inter",
+              "fontSize": "40px",
+              "fontWeight": "700",
+              "lineHeight": "130%",
+              "letterSpacing": "-0.02em"
+            },
+            "Dark": {
+              "fontFamily": "Inter",
+              "fontSize": "40px",
+              "fontWeight": "700",
+              "lineHeight": "130%",
+              "letterSpacing": "-0.02em"
+            }
+          }
+        }
+      }
+    }
+  },
+  "theme": {
+    "button": {
+      "bg": {
+        "default": { "$type": "color", "$value": "{core.color.brand.500}" }
+      }
+    }
+  }
+}
