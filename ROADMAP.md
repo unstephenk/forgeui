@@ -48,6 +48,7 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 - docs-site: show data freshness (generatedAt) hint on token table
 - docs-site: token table sticky header + horizontal scroll hint
 - CLI: add `forgeui fmt` to format generated outputs (prettier)
+- plugins: improve registry DX (builtin list + better load error hints)
 - CLI: add `forgeui check` (schema+validate+diff)
 - figma pull: support writing multiple outputs (extracted + raw payload)
 - docs: add Supported token types page (docs-site)
@@ -72,12 +73,12 @@ Rule: **every commit must keep at least 10 upcoming items** in the “Next” li
 ## Next (keep >= 10)
 1. **Tokens**: add typography → `theme.extend.typography` mapping (future).
 2. **Docs**: document plugin authoring best practices + examples.
-3. **Plugins**: plugin registry improvements (better errors + list command).
-4. **Docs site**: support deep links to tokens table via `?q=` (and document it).
-5. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
-6. **Docs**: add a "How it works" page (Tokens Studio → outputs pipeline).
-7. **Tokens**: add `gradient` token type mapping + tests.
-8. **Docs site**: show token count + filtered count in table footer.
-9. **Docs-site**: show "last generated" on token detail page too.
-10. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
-11. **CLI**: add `forgeui clean` to remove generated files + caches.
+3. **Docs site**: support deep links to tokens table via `?q=` (and document it).
+4. **CLI**: add `--sets` shorthand for config.filter.sets (comma-separated).
+5. **Docs**: add a "How it works" page (Tokens Studio → outputs pipeline).
+6. **Tokens**: add `gradient` token type mapping + tests.
+7. **Docs site**: show token count + filtered count in table footer.
+8. **Docs-site**: show "last generated" on token detail page too.
+9. **CLI**: add `--include/--exclude` shorthand flags for filter globs.
+10. **CLI**: add `forgeui clean` to remove generated files + caches.
+11. **Plugins**: add plugin execution timing info under --debug.

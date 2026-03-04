@@ -3,7 +3,7 @@ import jitiFactory from "jiti";
 
 import type { ForgeUIConfig, TokensStudioDoc } from "./types.js";
 import { validatePluginOptions } from "./plugins_schema.js";
-import { createBuiltinPlugin, isBuiltinPluginName } from "./builtin_plugins/index.js";
+import { createBuiltinPlugin, isBuiltinPluginName, listBuiltinPlugins } from "./builtin_plugins/index.js";
 
 export type ForgeUIPluginContext = {
   cfg: ForgeUIConfig;
@@ -66,7 +66,9 @@ export async function loadPlugins(cfg: ForgeUIConfig): Promise<ForgeUIPlugin[]> 
         loaded = jiti(abs);
       } catch (e: any) {
         const msg = e instanceof Error ? e.message : String(e);
-        throw new Error(`Failed to load plugin ${def.name ? `${def.name} ` : ""}from ${modPath}. ${msg}`);
+        const builtins = listBuiltinPlugins();
+        const hint = builtins.length ? ` If you meant a builtin plugin, use one of: ${builtins.join(", ")}.` : "";
+        throw new Error(`Failed to load plugin ${def.name ? `${def.name} ` : ""}from ${modPath}. ${msg}.${hint}`);
       }
 
       plugin = (loaded?.default ?? loaded) as any;

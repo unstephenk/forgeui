@@ -8,6 +8,7 @@ import { cac } from "cac";
 import { DEFAULT_CONFIG_FILES, configTemplate, loadConfig, resolveConfigPath } from "./config.js";
 import { generateTailwindPreset, generateTokensCss, outPath } from "./generate.js";
 import { loadPlugins, runHook } from "./plugins.js";
+import { listBuiltinPlugins } from "./builtin_plugins/index.js";
 import { maybePrettifyTs } from "./prettier.js";
 
 async function prettierFormat(code: string, parser: "typescript" | "css" | "json" | "markdown"): Promise<string> {
@@ -619,6 +620,43 @@ cli
       }
       log(`Schema file: ${info.schemaFile.exists ? "present" : "missing"} (${info.schemaFile.path})`);
     }
+  });
+
+cli
+  .command("plugins", "List builtin plugins and configured plugins")
+  .option("--config <path>", "Path to forgeui config (defaults to auto-detect)")
+  .action(async (opts: { config?: string }) => {
+    const builtins = listBuiltinPlugins();
+
+    const cfgPath = resolveConfigPath(opts.config);
+    const cfg = await loadConfig(cfgPath);
+
+    if (GLOBAL.json) {
+      process.stdout.write(
+        JSON.stringify(
+          {
+            ok: true,
+            builtin: builtins,
+            configured: (cfg.plugins ?? []).map((p) => ({ name: p.name ?? null, module: p.module, enabled: p.enabled !== false })),
+          },
+          null,
+          2
+        ) + "\n"
+      );
+      return;
+    }
+
+    log("Builtin plugins:");
+    for (const n of builtins) log(`- ${n}`);
+
+    const defs = cfg.plugins ?? [];
+    if (!defs.length) {
+      log("\nConfigured plugins: (none)");
+      return;
+    }
+
+    log("\nConfigured plugins:");
+    for (const p of defs) log(`- ${p.enabled === false ? "off" : "on"} ${p.module}${p.name ? ` (${p.name})` : ""}`);
   });
 
 cli

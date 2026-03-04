@@ -10,6 +10,10 @@ export const builtinPluginRegistry: Record<string, BuiltinPluginFactory> = {
   prettier: builtinPrettierPlugin,
 };
 
+export function listBuiltinPlugins(): string[] {
+  return Object.keys(builtinPluginRegistry).sort();
+}
+
 export function isBuiltinPluginName(name: string): boolean {
   return Boolean(builtinPluginRegistry[name]);
 }
